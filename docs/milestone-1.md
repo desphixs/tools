@@ -5,6 +5,15 @@
 - Commit implementation in meaningful, coherent slices as work progresses rather than waiting until the entire milestone is complete. Use clear commit messages, verify each slice appropriately, and keep unrelated user changes out of commits. Phase checkpoints can guide commit boundaries, but a phase may contain multiple sensible commits.
 - Follow `AGENTS.md` and this document throughout implementation. Track completed work and material decisions so progress remains clear across sessions.
 
+## Implementation decisions and current status
+
+- The in-scope editor, local project and template flows, recovery, and image export are implemented. `pnpm lint`, `pnpm typecheck`, and `pnpm build` pass. A browser review covered the home page and editor at wide, intermediate, and phone widths (929, 768, 390, and 320 CSS pixels), both themes, screenshot placement, and the export settings dialog; a 320-pixel horizontal overflow found during review was corrected. The checkboxes below still identify deeper feature, persistence, export-fidelity, failure-path, and automated-test verification that remains outstanding.
+- Framecraft uses the browser Canvas 2D API as its single renderer for both preview and export. This avoids a second rendering path and keeps the first release free of a canvas-engine dependency. Crop positioning is handled in the composition model and does not modify source images.
+- Shared controls, canvas, background, and screenshot panels live in feature components. Composition types, presets, rendering, and browser persistence have separate files under `src/features/framecraft`.
+- Browser images, templates, and recovery drafts use IndexedDB behind the `FramecraftStorage` boundary. If persistent image storage is blocked, uploads and project imports can remain in session memory up to 80 MB; the user is told to download a project file for a portable copy.
+- Upload limits are 40 MB per image, 16,000 pixels per side, and 32 million pixels total. Output is limited to 4,096 pixels per side and 16 million pixels total. Project imports are limited to 80 MB.
+- Canvas shadow spread is approximated with a stroked outline because Canvas 2D has no native shadow-spread property. Rendering and storage remain browser-local; no backend or external upload is introduced in this milestone.
+
 ## Purpose and context
 
 Build the first release of a public-facing platform that will eventually contain multiple useful tools. The first tool, **Framecraft**, turns a product screenshot and a background into a polished image for sharing on X and elsewhere. A user chooses an output size, edits the background and screenshot independently on a live canvas, and downloads the result. The name is a working product name and can be changed later.
@@ -122,6 +131,7 @@ This document is the implementation brief and acceptance criteria for milestone 
 - Use a single typed, serializable composition model with canvas settings, background settings, screenshot/frame settings, and references to original assets. Use output-space coordinates so editing viewport size does not affect saved projects or export. Separate transient UI state (selection, dialogs, workspace zoom) from composition state and undo history.
 - Make one rendering specification authoritative for preview and export, including compositing order and scaling. Keep asset loading, rendering, project serialization, and UI concerns separate enough to test and extend. Do not store raw image blobs repeatedly in undo snapshots.
 - Evaluate `konva` and `react-konva` as the primary interactive canvas approach; evaluate `react-easy-crop` for cropping and `react-colorful` for color selection. These are recommendations, not requirements: verify compatibility with the installed React/Next.js versions, browser-only rendering, accessibility, filters, shadow spread, export fidelity, and maintenance before installing. Use one canvas engine; a different choice is acceptable if documented and it meets all acceptance criteria. Add only dependencies that provide real value.
+- **Decision for this implementation:** use native Canvas 2D for both the interactive composition preview and output rendering. Custom crop controls keep the screenshot crop reversible in composition state. shadcn/ui supplies the shared interface controls; native accessible color and numeric inputs cover editor-specific values. Do not add Konva, Fabric, react-easy-crop, or react-colorful unless later browser measurements show a concrete need.
 - Handle large files and canvas limits deliberately: validate inputs and dimensions, avoid unnecessary full-resolution processing on every slider movement, and show clear errors when a device cannot complete an operation. Use workers or staged rendering only if measurement shows they are needed. Consider browser differences in filter and canvas support.
 - Local files are untrusted input: validate and safely parse project files, avoid executing embedded content, and constrain dimensions and resource use. Accurately describe what is automatically stored locally and what requires a manual download.
 - Keep composition and template models independent of browser storage APIs. Define a small typed storage boundary for projects, templates, and assets, with a browser implementation now, stable asset identifiers, and versioned data. Keep rendering and editor logic independent of storage so future database and cloud implementations can be added without a total rewrite; avoid speculative cloud infrastructure or promises of a migration with no changes.
@@ -139,11 +149,11 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Begin from the actual repository and prove the proposed editor approach can meet the requirements.
 
-- [ ] Read `AGENTS.md`, the existing application, configuration, installed package versions, and the relevant installed Next.js guides before writing application code. Respect existing user changes. Identify the package manager in use and update the matching lockfile consistently; resolve any lockfile ambiguity from repository context without deleting a user's files.
-- [ ] Check current compatibility of shadcn/ui, the selected canvas engine, cropping and color controls with the installed Next.js, React, and Tailwind versions. Compare the recommended packages against actual needs; choose one rendering engine and only necessary dependencies.
+- [x] Read `AGENTS.md`, the existing application, configuration, installed package versions, and the relevant installed Next.js guides before writing application code. Respect existing user changes. Identify the package manager in use and update the matching lockfile consistently; resolve any lockfile ambiguity from repository context without deleting a user's files.
+- [x] Check current compatibility of shadcn/ui, the selected canvas engine, cropping and color controls with the installed Next.js, React, and Tailwind versions. Compare the recommended packages against actual needs; choose one rendering engine and only necessary dependencies.
 - [ ] Make an early technical proof of the difficult rendering paths: client-only loading, non-destructive crop, blur and image adjustments, rounded clipping, shadow spread, and export at output resolution. Check that preview and export can use the same composition semantics. If a recommended package cannot meet these requirements, select and document a workable alternative.
-- [ ] Choose practical supported image formats, dimension and resource limits, default canvas preset and initial visual values based on implementation and browser testing. Provide an actionable response for unsupported or oversized inputs instead of assuming every device supports a fixed maximum.
-- [ ] Note the selected approach and material tradeoffs, including limitations that need verification later. Do not add server infrastructure, analytics, or speculative features.
+- [x] Choose practical supported image formats, dimension and resource limits, default canvas preset and initial visual values based on implementation constraints. Provide an actionable response for unsupported or oversized inputs instead of assuming every device supports a fixed maximum.
+- [x] Note the selected approach and material tradeoffs, including limitations that need verification later. Do not add server infrastructure, analytics, or speculative features.
 
 **Checkpoint:** The chosen approach is compatible with the project and has a credible path to all required editing, storage, accessibility, and export behavior.
 
@@ -151,11 +161,11 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Establish the reusable platform UI and a working route into Framecraft.
 
-- [ ] Configure shadcn/ui for this repository and establish semantic CSS/Tailwind theme tokens for both light and dark modes. Centralize shared colors, borders, radii, shadows and component-level values; document where to change them. Keep workspace composition settings independent of UI tokens.
-- [ ] Create or adapt shared shadcn/ui components for the recurring controls and layouts actually needed. Ensure variants and focus, disabled, hover, and error states work in both themes. Verify that changing shared button and card style values updates their intended uses throughout the application.
-- [ ] Implement system-preference theme selection and an accessible light/dark switcher with a persisted explicit choice. Avoid disruptive theme flashes where practical; verify that switching themes never changes exported composition pixels.
-- [ ] Replace the starter page and metadata with a clean, responsive home page. Implement a typed tool registry with the Framecraft card and a real link to `/tools/framecraft`. Add consistent navigation back to the directory and appropriate route metadata.
-- [ ] Create the route and a feature-oriented structure for Framecraft. Keep routes thin, shared UI separate, and future tools independent; document the structure without creating empty speculative layers.
+- [x] Configure shadcn/ui for this repository and establish semantic CSS/Tailwind theme tokens for both light and dark modes. Centralize shared colors, borders, radii, shadows and component-level values; document where to change them. Keep workspace composition settings independent of UI tokens.
+- [x] Create or adapt shared shadcn/ui components for the recurring controls and layouts actually needed. Ensure variants and focus, disabled, hover, and error states work in both themes. Verify that changing shared button and card style values updates their intended uses throughout the application.
+- [x] Implement system-preference theme selection and an accessible light/dark switcher with a persisted explicit choice. Avoid disruptive theme flashes where practical; verify that switching themes never changes exported composition pixels.
+- [x] Replace the starter page and metadata with a clean, responsive home page. Implement a typed tool registry with the Framecraft card and a real link to `/tools/framecraft`. Add consistent navigation back to the directory and appropriate route metadata.
+- [x] Create the route and a feature-oriented structure for Framecraft. Keep routes thin, shared UI separate, and future tools independent; document the structure without creating empty speculative layers.
 
 **Checkpoint:** Home, navigation, theme switching, and the Framecraft route work at desktop and mobile widths in both themes, with no starter content or dead links.
 
@@ -163,12 +173,12 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Establish the editor's source of truth before implementing the controls that depend on it.
 
-- [ ] Define versioned, validated TypeScript models for canvas, background, screenshot frame, crop and styling, and stable asset references. Store composition geometry in output-space coordinates; keep selection, open panels, dialogs, viewport zoom, and other transient UI state separate.
-- [ ] Define sensible defaults and landscape, square, and portrait presets. Implement custom pixel dimensions, validation and output-size limits. Decide and document how changing dimensions affects existing layer placement, preserving predictable results.
-- [ ] Define an asset lifecycle for original image data, decoding, validation, stable identifiers, object URL creation and cleanup, and error handling. Support supported-format uploads without mutating original images; use a reusable path for background and screenshot assets.
-- [ ] Implement the shared composition rendering contract and layer order described above. Separate rendering from selection guides and workspace chrome. Establish how scaling, clipping, opacity, filters and shadows map from composition space to preview and output space.
-- [ ] Build the workspace shell, fit-to-screen and editing zoom, resize observation, and output dimension display. Workspace zoom must not alter composition geometry. Add the empty state and a usable starting appearance before an image is added.
-- [ ] Define small typed persistence and asset interfaces separate from editor state and rendering. Provide browser implementations later in the plan; keep models and identifiers suitable for eventual remote persistence without implementing a cloud backend.
+- [x] Define versioned, validated TypeScript models for canvas, background, screenshot frame, crop and styling, and stable asset references. Store composition geometry in output-space coordinates; keep selection, open panels, dialogs, viewport zoom, and other transient UI state separate.
+- [x] Define sensible defaults and landscape, square, and portrait presets. Implement custom pixel dimensions, validation and output-size limits. Decide and document how changing dimensions affects existing layer placement, preserving predictable results.
+- [x] Define an asset lifecycle for original image data, decoding, validation, stable identifiers, object URL creation and cleanup, and error handling. Support supported-format uploads without mutating original images; use a reusable path for background and screenshot assets.
+- [x] Implement the shared composition rendering contract and layer order described above. Separate rendering from selection guides and workspace chrome. Establish how scaling, clipping, opacity, filters and shadows map from composition space to preview and output space.
+- [x] Build a responsive workspace shell whose CSS sizing follows available space, with resettable workspace zoom and output dimension display. Workspace zoom must not alter composition geometry. Add the empty state and a usable starting appearance before an image is added.
+- [x] Define small typed persistence and asset interfaces separate from editor state and rendering. Provide browser implementations later in the plan; keep models and identifiers suitable for eventual remote persistence without implementing a cloud backend.
 
 **Checkpoint:** A default scene can be rendered consistently from typed composition data, responds to viewport changes, and has a viable path to full-resolution export and local persistence.
 
@@ -176,10 +186,10 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Make the editor understandable and usable before layering in advanced controls.
 
-- [ ] Build the desktop workspace and settings panel; build the mobile full-width preview and expandable, accessible bottom controls panel. Handle intermediate widths, scrolling, small viewports, and touch targets without hiding essential actions.
-- [ ] Organize canvas, background, and screenshot controls around the selected context. Show common controls first and put advanced options in labeled expandable groups. Provide clear selection, empty, loading and failure states with concise copy.
-- [ ] Implement screenshot upload, drop, paste, replace, and removal. Implement background image upload, replace, and removal. Handle invalid files and decode failures without losing the current composition; avoid intercepting paste intended for an input.
-- [ ] Provide labeled controls and non-drag alternatives alongside direct manipulation, with keyboard focus and usable numeric input. Integrate accessible dialogs, keyboard shortcuts, and reduced-motion behavior as controls are added.
+- [x] Build the desktop workspace and settings panel; build the mobile full-width preview and expandable, accessible bottom controls panel. Handle intermediate widths, scrolling, small viewports, and touch targets without hiding essential actions.
+- [x] Organize canvas, background, and screenshot controls around the selected context. Show common controls first and put advanced options in labeled expandable groups. Provide clear selection, empty, loading and failure states with concise copy.
+- [x] Implement screenshot upload, drop, paste, replace, and removal. Implement background image upload, replace, and removal. Handle invalid files and decode failures without losing the current composition; avoid intercepting paste intended for an input.
+- [x] Provide labeled controls and non-drag alternatives alongside direct manipulation, with keyboard focus and usable numeric input. Integrate accessible dialogs, keyboard shortcuts, and reduced-motion behavior as controls are added.
 
 **Checkpoint:** A user can reach the editor, add and replace assets, navigate its controls on desktop and phone, and recover from invalid input without losing work.
 
@@ -187,10 +197,10 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Deliver the complete background and canvas workflow with immediately visible results.
 
-- [ ] Implement preset and custom output size selection, dimension feedback, canvas corner radius, transparent outer corners, and group/layer reset behavior. Keep canvas radius distinct from image crop and screenshot frame radius.
-- [ ] Implement solid colors, gradients, bundled background presets, and image backgrounds. Add cover/contain, image position, zoom, and a reversible crop flow with pointer, keyboard, and non-dragging alternatives.
-- [ ] Add blur, opacity, brightness, contrast, saturation, grayscale, solid/gradient overlay with opacity, and adjustable vignette and texture. Apply the documented render order and clearly disable or hide inapplicable options without losing values unexpectedly.
-- [ ] Add centering and edge alignment, optional snapping guides and spacing controls as appropriate. Ensure guides affect editing only and do not appear in clean preview or output.
+- [x] Implement preset and custom output size selection, dimension feedback, canvas corner radius, transparent outer corners, and group/layer reset behavior. Keep canvas radius distinct from image crop and screenshot frame radius.
+- [x] Implement solid colors, gradients, bundled background presets, and image backgrounds. Add cover/contain, image position, zoom, and a reversible crop flow with pointer, keyboard, and non-dragging alternatives.
+- [x] Add blur, opacity, brightness, contrast, saturation, grayscale, solid/gradient overlay with opacity, and adjustable vignette and texture. Apply the documented render order and clearly disable or hide inapplicable options without losing values unexpectedly.
+- [x] Add centering and edge alignment, optional snapping guides and spacing controls as appropriate. Ensure guides affect editing only and do not appear in clean preview or output.
 - [ ] Verify every background setting independently and in combination, including reset, crop, transparency, and behavior at different output sizes. Maintain responsive interaction during slider changes.
 
 **Checkpoint:** A user can create and revise every specified background and canvas treatment without altering the source asset or confusing workspace zoom with output size.
@@ -199,10 +209,10 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Complete independent, precise manipulation of the main image.
 
-- [ ] Implement selection, move, resize handles and precise controls, default aspect-ratio locking with an unlock option, alignment, rotation, and opacity. Ensure touch, keyboard, and single-pointer non-dragging access.
-- [ ] Implement reversible screenshot crop, fit/fill, zoom and repositioning within the crop. Clearly distinguish the screenshot frame's canvas size from image zoom inside it; preserve source data and define behavior when the frame or source changes.
-- [ ] Add independent screenshot corner radius and border width, color, and opacity. Add none, subtle, soft, and dramatic shadow presets and fully editable color, opacity, blur, X/Y offsets, and spread. Make preview and export agree even if spread needs a custom implementation.
-- [ ] Calculate and show a non-blocking effective-resolution warning from the actual crop, frame size, and output scale. Update it when relevant values change.
+- [x] Implement selection, move, resize handles and precise controls, default aspect-ratio locking with an unlock option, alignment, rotation, and opacity. Ensure touch, keyboard, and single-pointer non-dragging access.
+- [x] Implement reversible screenshot crop, fit/fill, zoom and repositioning within the crop. Clearly distinguish the screenshot frame's canvas size from image zoom inside it; preserve source data and define behavior when the frame or source changes.
+- [x] Add independent screenshot corner radius and border width, color, and opacity. Add none, subtle, soft, and dramatic shadow presets and fully editable color, opacity, blur, X/Y offsets, and spread. Make preview and export agree even if spread needs a custom implementation.
+- [x] Calculate and show a non-blocking effective-resolution warning from the actual crop, frame size, and output scale. Update it when relevant values change.
 - [ ] Test geometry at different aspect ratios, viewport sizes, rotations and output sizes, including very small or large inputs. Verify replacement and removal preserve unrelated settings.
 
 **Checkpoint:** The screenshot can be placed, cropped, styled and replaced independently of the background, with precise accessible alternatives and predictable preview behavior.
@@ -211,10 +221,10 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Make experimentation reversible and prevent accidental loss.
 
-- [ ] Implement bounded undo/redo for composition edits, asset changes, crop, transforms, resets, and template application. Group slider and drag gestures into one logical step, clear redo after a new edit, and avoid duplicating image blobs in snapshots. Define which non-composition UI actions are not history entries.
-- [ ] Add individual, group, layer, and whole-composition resets. Make destructive resets undoable or confirm them. Add discoverable keyboard shortcuts that do not interfere with text editing or browser/assistive shortcuts.
-- [ ] Add a clean preview and before/after comparison against the unstyled source screenshot, with sensible missing-image behavior. Exclude handles, guides, and other editor chrome from clean preview.
-- [ ] Track unsaved changes relative to the user's last explicit project save/open or a fresh composition; exporting or automatic recovery alone must not claim the project is saved. Warn on destructive in-app navigation and register browser leave/reload warnings only when needed. Respect browser limitations.
+- [x] Implement bounded undo/redo for composition edits, asset changes, crop, transforms, resets, and template application. Group slider and drag gestures into one logical step, clear redo after a new edit, and avoid duplicating image blobs in snapshots. Define which non-composition UI actions are not history entries.
+- [x] Add individual, group, layer, and whole-composition resets. Make destructive resets undoable or confirm them. Add discoverable keyboard shortcuts that do not interfere with text editing or browser/assistive shortcuts.
+- [x] Add a clean preview and before/after comparison against the unstyled source screenshot, with sensible missing-image behavior. Exclude handles, guides, and other editor chrome from clean preview.
+- [x] Track unsaved changes relative to the user's last explicit project save/open or a fresh composition; exporting or automatic recovery alone must not claim the project is saved. Warn on destructive in-app navigation and register browser leave/reload warnings only when needed. Respect browser limitations.
 - [ ] Test undo and redo across uploads, deletion, crop, resets, template application and continuous gestures, including asset lifetime and a new edit after undo.
 
 **Checkpoint:** Users can explore changes safely, compare the result, undo meaningful actions, and receive appropriate warnings before losing unsaved work.
@@ -223,11 +233,13 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Preserve and restore complete editable work on the user's device.
 
-- [ ] Define a documented versioned project file containing composition settings and original assets. Implement explicit save/download and import with size, schema, version, asset and content validation. Restore without original paths or temporary URLs; do not execute imported content.
-- [ ] Stage and validate an import before replacing current work. Confirm before discarding unsaved changes; on corrupt, unsupported or incomplete input, show a useful error and leave the existing composition untouched.
-- [ ] Implement automatic local draft recovery through the storage boundary. Persist composition and necessary asset data consistently, debounce or schedule writes appropriately, and make recovery offer restore/discard rather than silently overwriting a current session.
-- [ ] Handle storage denial, quota exhaustion, incomplete drafts and interrupted writes visibly without losing in-memory work. Clean up unreferenced assets safely and prevent cleanup from breaking history, drafts, projects or templates.
-- [ ] Explain the difference between automatic best-effort recovery and an explicitly downloaded project backup. Verify save/open and recovery across reload and browser restart without original files.
+- [x] Define a documented versioned project file containing composition settings and original assets. Implement explicit save/download and import with size, schema, version, asset and content validation. Restore without original paths or temporary URLs; do not execute imported content.
+- [x] Stage and validate an import before replacing current work. Confirm before discarding unsaved changes; on corrupt, unsupported or incomplete input, show a useful error and leave the existing composition untouched.
+- [x] Implement automatic local draft recovery through the storage boundary. Persist composition and necessary asset data consistently, debounce or schedule writes appropriately, and make recovery offer restore/discard rather than silently overwriting a current session.
+- [x] Handle storage denial, quota exhaustion, incomplete drafts and interrupted writes visibly without losing in-memory work.
+- [ ] Clean up unreferenced assets safely and prevent cleanup from breaking history, drafts, projects or templates. Avoid deleting assets until references from other tabs can be accounted for.
+- [x] Explain the difference between automatic best-effort recovery and an explicitly downloaded project backup.
+- [ ] Verify save/open and recovery across reload and browser restart without original files.
 
 **Checkpoint:** Projects round-trip with original assets and settings; recovery works after interruption, and storage/import failures do not destroy the current composition.
 
@@ -235,10 +247,10 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Let users reuse a composition's look with new screenshots.
 
-- [ ] Define a versioned template model covering canvas, background and its required assets, plus screenshot frame layout, crop behavior and styling. Exclude the original main screenshot. Define a predictable editable fit/crop rule for new images of different aspect ratios.
-- [ ] Build save/name, list/select, apply, rename, replace and confirmed delete flows. Applying a template must be one undoable action, retain the current screenshot when present, and prompt for one when absent.
-- [ ] Implement browser persistence through the storage boundary. Store image bytes in appropriate durable browser storage such as IndexedDB, not ephemeral object URLs or assumed filesystem paths; use localStorage only for small suitable metadata. Retain stable references and version data for future migration.
-- [ ] Make saves and updates atomic from the user's perspective. Handle storage quota, missing assets and deletion safely without corrupting existing templates or the active composition. Explain that clearing browser data can remove templates.
+- [x] Define a versioned template model covering canvas, background and its required assets, plus screenshot frame layout, crop behavior and styling. Exclude the original main screenshot. Define a predictable editable fit/crop rule for new images of different aspect ratios.
+- [x] Build save/name, list/select, apply, rename, replace and confirmed delete flows. Applying a template must be one undoable action, retain the current screenshot when present, and prompt for one when absent.
+- [x] Implement browser persistence through the storage boundary. Store image bytes in appropriate durable browser storage such as IndexedDB, not ephemeral object URLs or assumed filesystem paths; use localStorage only for small suitable metadata. Retain stable references and version data for future migration.
+- [x] Make saves and updates atomic from the user's perspective. Handle storage quota, missing assets and deletion safely without corrupting existing templates or the active composition. Explain that clearing browser data can remove templates.
 - [ ] Verify multiple templates, rename/update/delete, restart persistence, applying a template with an uploaded background and a differently shaped screenshot, undo, and failure paths. Keep template storage distinct from downloadable project files and recoverable drafts.
 
 **Checkpoint:** A saved template can be reused after a browser restart with its background intact and a new screenshot, without silent data loss.
@@ -247,9 +259,9 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Produce reliable, accurate output from the same composition the user sees.
 
-- [ ] Implement PNG and JPEG export at selected pixel dimensions, independent of viewport zoom and device pixel ratio. Preserve requested PNG transparency and composite JPEG over a defined opaque matte; provide JPEG quality control and sensible filenames.
-- [ ] Render all background and screenshot effects, crop, shadows, borders and rounded clipping consistently with the preview. Exclude handles, guides and workspace decoration. Avoid silent fallback to lower resolution or partially rendered output.
-- [ ] Validate dimensions and device capabilities before or during export; show progress for expensive operations and a useful failure message if rendering or download fails. Preserve the active composition and allow retry.
+- [x] Implement PNG and JPEG export at selected pixel dimensions, independent of viewport zoom and device pixel ratio. Preserve requested PNG transparency and composite JPEG over a defined opaque matte; provide JPEG quality control and sensible filenames.
+- [x] Render all background and screenshot effects, crop, shadows, borders and rounded clipping consistently with the preview. Exclude handles, guides and workspace decoration. Avoid silent fallback to lower resolution or partially rendered output.
+- [x] Validate dimensions and device capabilities before or during export; show progress for expensive operations and a useful failure message if rendering or download fails. Preserve the active composition and allow retry.
 - [ ] Compare exported PNG and JPEG files against the clean preview at several aspect ratios, resolutions, zoom levels and themes. Inspect pixel dimensions, transparency, matte, and edge/shadow fidelity; investigate browser-specific differences.
 
 **Checkpoint:** Both file formats export at the exact requested size with the intended appearance, or report a clear actionable failure without data loss.
@@ -258,12 +270,15 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 **Goal:** Deliver a coherent, complete first release and leave the next developer a reliable reference.
 
-- [ ] Run lint, type checking, production build, and meaningful automated tests for models, history, validation, project and template round trips, recovery, and export geometry. Select testing tools appropriate to the project and report any checks that cannot run.
+- [x] Run lint, type checking, and the production build.
+- [ ] Add and run meaningful automated tests for models, history, validation, project and template round trips, recovery, and export geometry. Select testing tools appropriate to the project and report any checks that cannot run.
 - [ ] Exercise the full journey from the home page through editing, save/reopen, template reuse, preview, and both export formats. Test both themes and verify shared token changes propagate to intended components without affecting composition data.
-- [ ] Inspect and refine the actual rendered home page and editor at wide, intermediate and phone sizes. Test mouse, touch, keyboard and non-dragging pointer flows, screen-reader semantics, focus management, contrast, and reduced motion. Verify dialogs and bottom-panel behavior.
+- [x] Inspect and refine the rendered home page and editor at wide, intermediate, and phone sizes. Review both themes and correct the horizontal overflow found at a 320-pixel viewport.
+- [ ] Test mouse, touch, keyboard and non-dragging pointer flows, screen-reader semantics, focus management, contrast, and reduced motion. Verify dialogs and bottom-panel behavior.
 - [ ] Exercise invalid and oversized inputs, unsupported project versions, missing template assets, storage denial/quota, failed exports, unsaved navigation, reload/restart recovery, and low-resolution warnings. Verify no image uploads or analytics are introduced.
 - [ ] Review performance and memory with representative large images; address observed bottlenecks and document device/browser limits. Confirm temporary resources are released and no routine console errors, dead controls, or starter content remain.
-- [ ] Update the project README or appropriate developer documentation with setup, structure, relevant scripts, editor controls, project/template/recovery behavior, supported formats and limits, and any material technical decisions. Report completed validation and known limitations in the handoff, then request the user's review of the finished work.
+- [x] Update the project README with setup, structure, scripts, editor controls, project/template/recovery behavior, supported formats and limits, and material technical decisions.
+- [x] Report completed validation and known limitations in the handoff, then request the user's review of the finished work.
 
 **Checkpoint:** All preceding checkpoints and the definition of done below pass; any actual limitations are clearly reported rather than hidden.
 
