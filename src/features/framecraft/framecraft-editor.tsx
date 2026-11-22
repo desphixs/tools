@@ -76,28 +76,6 @@ type DragState = {
   initialBackgroundY?: number;
 };
 
-function scaleScreenshotForCanvas(screenshot: Composition["screenshot"], sx: number, sy: number) {
-  const scale = screenshot.aspectLocked ? Math.min(sx, sy) : undefined;
-  const width = screenshot.width * (scale ?? sx);
-  const height = screenshot.height * (scale ?? sy);
-  const shadowWidth = screenshot.shadowWidth ?? screenshot.width;
-  const shadowHeight = screenshot.shadowHeight ?? screenshot.height;
-  const shadowWidthMatchesFrame = Math.abs(shadowWidth - screenshot.width) < 0.01;
-  const shadowHeightMatchesFrame = Math.abs(shadowHeight - screenshot.height) < 0.01;
-
-  return {
-    ...screenshot,
-    width,
-    height,
-    cornerRadius: screenshot.cornerRadius * Math.min(sx, sy),
-    shadowBlur: screenshot.shadowBlur * Math.min(sx, sy),
-    shadowX: screenshot.shadowX * sx,
-    shadowY: screenshot.shadowY * sy,
-    shadowWidth: shadowWidthMatchesFrame ? width : shadowWidth * sx,
-    shadowHeight: shadowHeightMatchesFrame ? height : shadowHeight * sy,
-  };
-}
-
 function readImage(file: Blob): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -429,18 +407,10 @@ export function FramecraftEditor() {
   });
 
   const setPreset = (preset: CanvasPreset) => {
-    const old = compositionRef.current;
     const nextSize = canvasPresets[preset];
-    const sx = nextSize.width / old.canvas.width;
-    const sy = nextSize.height / old.canvas.height;
     oneEdit((current) => ({
       ...current,
       canvas: { ...current.canvas, width: nextSize.width, height: nextSize.height, preset },
-      screenshot: {
-        ...scaleScreenshotForCanvas(current.screenshot, sx, sy),
-        x: current.screenshot.x * sx,
-        y: current.screenshot.y * sy,
-      },
     }));
   };
 
@@ -453,16 +423,9 @@ export function FramecraftEditor() {
       setError(`Canvas size is limited to ${MAX_CANVAS_PIXELS.toLocaleString()} pixels. Reduce one dimension.`);
       return;
     }
-    const sx = width / current.canvas.width;
-    const sy = height / current.canvas.height;
     oneEdit((state) => ({
       ...state,
       canvas: { ...state.canvas, width, height, preset: "custom" },
-      screenshot: {
-        ...scaleScreenshotForCanvas(state.screenshot, sx, sy),
-        x: state.screenshot.x * sx,
-        y: state.screenshot.y * sy,
-      },
     }));
   };
 
