@@ -66,7 +66,11 @@ function validScreenQuad(points: MockupTemplate["screenCorners"]) {
     doubledArea += current.x * next.y - next.x * current.y;
   }
 
-  return Math.abs(doubledArea) > 1e-4;
+  const topY = (points[0].y + points[1].y) / 2;
+  const bottomY = (points[2].y + points[3].y) / 2;
+  const leftX = (points[0].x + points[3].x) / 2;
+  const rightX = (points[1].x + points[2].x) / 2;
+  return Math.abs(doubledArea) > 1e-4 && topY < bottomY && leftX < rightX;
 }
 
 function validAssetSource(source: string) {

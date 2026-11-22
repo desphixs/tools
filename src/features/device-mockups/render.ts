@@ -174,9 +174,12 @@ function screenGuide(ctx: CanvasRenderingContext2D, template: MockupTemplate) {
     else ctx.lineTo(x, y);
   });
   ctx.closePath();
-  ctx.strokeStyle = "rgba(255,255,255,0.86)";
-  ctx.lineWidth = Math.max(2, ctx.canvas.width / 700);
+  ctx.strokeStyle = "rgba(22,18,31,0.82)";
+  ctx.lineWidth = Math.max(3, ctx.canvas.width / 500);
   ctx.setLineDash([8 * (ctx.canvas.width / template.sceneWidth), 5 * (ctx.canvas.width / template.sceneWidth)]);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,0.92)";
+  ctx.lineWidth = Math.max(1, ctx.canvas.width / 1400);
   ctx.stroke();
   ctx.restore();
 }
