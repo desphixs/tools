@@ -8,6 +8,7 @@ import {
   ChevronDown,
   CircleHelp,
   Crop,
+  FolderOpen,
   FileDown,
   FileUp,
   ImagePlus,
@@ -30,6 +31,7 @@ import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
@@ -203,6 +205,7 @@ export function FramecraftEditor() {
   const dirtyRef = useRef(false);
   const [storageReady, setStorageReady] = useState(false);
   const [recovery, setRecovery] = useState<Composition | null>(null);
+  const [projectPopoverOpen, setProjectPopoverOpen] = useState(false);
   const [templates, setTemplates] = useState<CompositionTemplate[]>([]);
   const [templateDialogOpen, setTemplateDialogOpen] = useState(false);
   const [templateListOpen, setTemplateListOpen] = useState(false);
@@ -990,8 +993,49 @@ export function FramecraftEditor() {
       <Button variant="ghost" size="icon" className="sm:hidden max-[360px]:size-7" aria-label="Save template" onClick={() => { setTemplateName(""); setSelectedTemplateId(""); setTemplateDialogOpen(true); }}><Save /></Button>
       <Button variant="outline" size="sm" className="hidden gap-2 md:inline-flex" onClick={() => setTemplateListOpen(true)}><LayoutTemplate /> Templates</Button>
       <Button variant="ghost" size="icon" className="md:hidden max-[360px]:size-7" aria-label="Open templates" onClick={() => setTemplateListOpen(true)}><LayoutTemplate /></Button>
-      <Button variant="ghost" size="icon" className="max-[360px]:size-7" aria-label="Open project" onClick={() => fileProjectRef.current?.click()}><FileUp /></Button>
-      <Button variant="ghost" size="icon" className="max-[360px]:size-7" aria-label="Download project" onClick={() => void saveProject()}><FileDown /></Button>
+      <Popover open={projectPopoverOpen} onOpenChange={setProjectPopoverOpen}>
+        <PopoverTrigger render={<Button variant="outline" size="sm" className="gap-1.5 max-[360px]:size-7 max-[360px]:px-0" aria-label="Project files" />}>
+          <FolderOpen />
+          <span className="max-[360px]:sr-only">Project</span>
+          <ChevronDown className="size-3.5 max-[360px]:hidden" />
+        </PopoverTrigger>
+        <PopoverContent align="end" sideOffset={8} className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-sm font-medium">Project files</h2>
+            <p className="text-xs leading-5 text-muted-foreground">Save the full composition with its images, or open a saved project.</p>
+          </div>
+          <div className="grid gap-2">
+            <Button
+              variant="outline"
+              className="h-auto w-full justify-start gap-3 whitespace-normal px-3 py-2.5 text-left"
+              onClick={() => {
+                setProjectPopoverOpen(false);
+                void saveProject();
+              }}
+            >
+              <FileDown className="mt-0.5 size-4 shrink-0" />
+              <span className="grid gap-0.5">
+                <span className="text-sm font-medium">Download project</span>
+                <span className="text-xs font-normal leading-4 text-muted-foreground">Save this composition and its images as a .framecraft file.</span>
+              </span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto w-full justify-start gap-3 whitespace-normal px-3 py-2.5 text-left"
+              onClick={() => {
+                setProjectPopoverOpen(false);
+                fileProjectRef.current?.click();
+              }}
+            >
+              <FileUp className="mt-0.5 size-4 shrink-0" />
+              <span className="grid gap-0.5">
+                <span className="text-sm font-medium">Open project</span>
+                <span className="text-xs font-normal leading-4 text-muted-foreground">Continue from a .framecraft file on your device.</span>
+              </span>
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
       <Button size="sm" className="gap-2 max-[360px]:gap-1 max-[360px]:px-2" onClick={() => setExportDialogOpen(true)}><ArrowDownToLine /> Export</Button>
     </>
   );
