@@ -31,12 +31,21 @@ export default function Home() {
                   <CardDescription className="text-sm leading-6">{tool.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-4">
-                  <div aria-hidden="true" className="relative flex h-36 items-center justify-center overflow-hidden rounded-[calc(var(--radius-card)-0.2rem)] bg-[radial-gradient(ellipse_at_15%_15%,#d8cbff_0,transparent_44%),radial-gradient(ellipse_at_85%_88%,#f0c9ba_0,transparent_44%),linear-gradient(135deg,#f1edff,#f8f5f1)] dark:bg-[radial-gradient(ellipse_at_15%_15%,#58438a_0,transparent_44%),radial-gradient(ellipse_at_85%_88%,#68483f_0,transparent_44%),linear-gradient(135deg,#292339,#312d2e)]">
-                    <div className="absolute h-24 w-40 rotate-[-8deg] rounded-[var(--radius-card)] bg-white/50 shadow-[var(--shadow-card)] ring-1 ring-black/5 dark:bg-white/10" />
-                    <div className="relative flex h-24 w-40 rotate-[4deg] items-center justify-center rounded-[var(--radius-card)] bg-white p-2 shadow-[var(--shadow-popover)] ring-1 ring-black/10 dark:bg-zinc-900">
-                      <div className="h-full w-full rounded-[var(--radius-control)] bg-[linear-gradient(145deg,#ece6ff,#f8ede7)] dark:bg-[linear-gradient(145deg,#39314d,#473a39)]" />
+                  {tool.id === "collage-maker" ? (
+                    <div aria-hidden="true" className="relative flex h-36 items-center justify-center overflow-hidden rounded-[calc(var(--radius-card)-0.2rem)] bg-[linear-gradient(145deg,#edf1f4,#e7e2ef)] dark:bg-[linear-gradient(145deg,#242935,#302b3b)]">
+                      <div className="grid aspect-[1.2] w-44 grid-cols-3 grid-rows-2 gap-1.5 rounded-md bg-white/70 p-2 shadow-[var(--shadow-popover)] dark:bg-black/20">
+                        <span className="rounded-sm bg-primary/20" /><span className="rounded-sm bg-primary/35" /><span className="rounded-sm bg-primary/15" />
+                        <span className="rounded-sm bg-primary/30" /><span className="rounded-sm bg-primary/15" /><span className="rounded-sm bg-primary/25" />
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div aria-hidden="true" className="relative flex h-36 items-center justify-center overflow-hidden rounded-[calc(var(--radius-card)-0.2rem)] bg-[radial-gradient(ellipse_at_15%_15%,#d8cbff_0,transparent_44%),radial-gradient(ellipse_at_85%_88%,#f0c9ba_0,transparent_44%),linear-gradient(135deg,#f1edff,#f8f5f1)] dark:bg-[radial-gradient(ellipse_at_15%_15%,#58438a_0,transparent_44%),radial-gradient(ellipse_at_85%_88%,#68483f_0,transparent_44%),linear-gradient(135deg,#292339,#312d2e)]">
+                      <div className="absolute h-24 w-40 rotate-[-8deg] rounded-[var(--radius-card)] bg-white/50 shadow-[var(--shadow-card)] ring-1 ring-black/5 dark:bg-white/10" />
+                      <div className="relative flex h-24 w-40 rotate-[4deg] items-center justify-center rounded-[var(--radius-card)] bg-white p-2 shadow-[var(--shadow-popover)] ring-1 ring-black/10 dark:bg-zinc-900">
+                        <div className="h-full w-full rounded-[var(--radius-control)] bg-[linear-gradient(145deg,#ece6ff,#f8ede7)] dark:bg-[linear-gradient(145deg,#39314d,#473a39)]" />
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter className="justify-end border-t-0 bg-transparent pt-0">
                   <Link href={tool.href} className={buttonVariants({ size: "sm", className: "gap-1.5" })}>

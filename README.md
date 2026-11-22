@@ -1,6 +1,6 @@
 # Tools
 
-A Next.js tools directory. The first tool is **Framecraft**, a browser based editor for composing product screenshots with backgrounds and exporting images for social posts.
+A Next.js tools directory. It currently includes **Framecraft**, a product screenshot composer, and **Collage Maker**, a multi-image collage editor.
 
 ## Run locally
 
@@ -28,6 +28,7 @@ pnpm build               # Create a production build
 src/
   app/                         App Router pages and global theme tokens
     tools/framecraft/          Framecraft route and loading state
+    tools/collage-maker/       Collage Maker route and loading state
   components/                  Shared platform UI and shadcn/ui components
   features/framecraft/          Framecraft domain and editor logic
     components/                Canvas, background, screenshot and shared controls
@@ -36,6 +37,11 @@ src/
     presets.ts                  Canvas sizes and background presets
     render.ts                   Shared Canvas 2D preview and export renderer
     storage.ts                  Typed browser persistence boundary and IndexedDB adapter
+  features/collage-maker/       Collage Maker domain, renderer, editor and storage
+    collage-editor.tsx          Responsive editor state and interactions
+    model.ts                    Versioned canvas, layout, cell and project types
+    render.ts                   Shared Canvas 2D preview and export renderer
+    storage.ts                  IndexedDB asset and recovery adapter
   lib/
     tools.ts                    Typed directory registry for available tools
 docs/
@@ -60,10 +66,16 @@ The desktop editor uses a workspace beside its controls. On phones, the preview 
 - A template saves the canvas, background and screenshot styling without the main screenshot. Templates are stored in the current browser and can be removed when browser data is cleared.
 - PNG preserves requested transparent corners. JPEG uses a white matte and offers a quality setting.
 
+## Collage Maker
+
+Collage Maker creates square, portrait, landscape, story, or custom-size compositions with up to 36 image cells. It includes equal grids, diagonal tiles, adjustable rows and columns, outer padding, cell gaps, cell shapes, independent image crop and fit, per-cell position, size, rotation, opacity and border controls, solid/gradient/image backgrounds, undo/redo, recovery drafts, portable `.collage` project files, and PNG/JPEG export. Cells can be selected and dragged directly on the canvas; their lower corner resizes them. Arrow keys move the selected cell, and numeric controls remain available for precise edits. The mobile editor keeps the canvas above a scrollable, tabbed control panel and keeps add, preview, undo, redo, and export actions in reach.
+
+Collage Maker stores images and recovery drafts in its own IndexedDB database. Project files include the composition and source images so they can be reopened on another device. Image inputs accept PNG, JPEG, and WebP, up to 40 MB each. Canvases are limited to 4,096 pixels per side and 16 megapixels total; projects are limited to 120 MB of source images. Browser storage is best effort, so download a project file to keep a portable copy.
+
 ## Implementation notes
 
-- **Rendering:** Framecraft uses the browser Canvas 2D API instead of adding Konva or Fabric. The same renderer draws the editable preview and final output, so composition scaling, clipping, effects and layer order have one source of truth. Workspace guides and selection handles are excluded from export. The shadow is rendered as a filled rounded shape with blur and offsets; spread expands that shape because Canvas 2D does not expose a native shadow-spread setting.
-- **Persistence:** The editor depends on the `FramecraftStorage` interface in `storage.ts`; the first implementation uses IndexedDB. Composition data and stable asset IDs do not depend on browser APIs, which leaves a boundary for a future remote storage adapter.
+- **Rendering:** Both tools use the browser Canvas 2D API instead of adding Konva or Fabric. Each tool uses the same renderer for its editable preview and final output, so composition scaling, clipping and layer order have one source of truth. Workspace guides and selection handles are excluded from export. Framecraft's shadow spread is rendered by expanding a filled rounded shape because Canvas 2D does not expose a native shadow-spread setting.
+- **Persistence:** Framecraft and Collage Maker use separate typed storage interfaces and IndexedDB databases. Their composition data and stable asset IDs do not depend on browser APIs, keeping each tool's domain model separate from persistence.
 - **UI:** shadcn/ui components provide common controls. Shared light and dark theme tokens live in `src/app/globals.css`; button, card, control and popover styles use those tokens. `next-themes` respects the system preference and saves an explicit theme choice.
 - **Limits:** Canvas filters, memory use and export capacity vary by browser and device. Large images and output sizes can fail on constrained devices; the editor reports input, storage and export errors while preserving the current in-memory composition.
 

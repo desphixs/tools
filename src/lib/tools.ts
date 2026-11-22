@@ -1,4 +1,4 @@
-import { ImageIcon } from "lucide-react";
+import { Grid2X2, ImageIcon } from "lucide-react";
 
 export const tools = [
   {
@@ -8,6 +8,15 @@ export const tools = [
     href: "/tools/framecraft",
     category: "Image",
     icon: ImageIcon,
+    status: "available",
+  },
+  {
+    id: "collage-maker",
+    name: "Collage Maker",
+    description: "Arrange photos into flexible grids and custom collages.",
+    href: "/tools/collage-maker",
+    category: "Image",
+    icon: Grid2X2,
     status: "available",
   },
 ] as const;

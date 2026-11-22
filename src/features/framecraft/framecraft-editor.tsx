@@ -925,7 +925,8 @@ export function FramecraftEditor() {
     const sourceAspect = sourceImage.width / sourceImage.height;
     const frameAspect = composition.screenshot.width / composition.screenshot.height;
     if (Math.abs(sourceAspect - frameAspect) < 0.001) return;
-    setCurrent(fitScreenshotToImage(composition, sourceImage.width, sourceImage.height));
+    const timer = window.setTimeout(() => setCurrent(fitScreenshotToImage(composition, sourceImage.width, sourceImage.height)), 0);
+    return () => window.clearTimeout(timer);
   }, [sourceImage, composition, setCurrent]);
 
   const sourceScale = sourceImage
