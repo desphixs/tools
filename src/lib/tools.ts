@@ -1,4 +1,4 @@
-import { Grid2X2, ImageIcon } from "lucide-react";
+import { Grid2X2, ImageIcon, Laptop } from "lucide-react";
 
 export const tools = [
   {
@@ -17,6 +17,15 @@ export const tools = [
     href: "/tools/collage-maker",
     category: "Image",
     icon: Grid2X2,
+    status: "available",
+  },
+  {
+    id: "device-mockups",
+    name: "Device Mockups",
+    description: "Place a product screenshot inside a laptop or monitor scene.",
+    href: "/tools/device-mockups",
+    category: "Image",
+    icon: Laptop,
     status: "available",
   },
 ] as const;

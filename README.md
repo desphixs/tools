@@ -1,6 +1,6 @@
 # Tools
 
-A Next.js tools directory. It currently includes **Framecraft**, a product screenshot composer, and **Collage Maker**, a multi-image collage editor.
+A Next.js tools directory. It currently includes **Framecraft**, a product screenshot composer, **Collage Maker**, a multi-image collage editor, and **Device Mockups**.
 
 ## Run locally
 
@@ -29,6 +29,7 @@ src/
   app/                         App Router pages and global theme tokens
     tools/framecraft/          Framecraft route and loading state
     tools/collage-maker/       Collage Maker route and loading state
+    tools/device-mockups/      Device Mockups route and loading state
   components/                  Shared platform UI and shadcn/ui components
   features/framecraft/          Framecraft domain and editor logic
     components/                Canvas, background, screenshot and shared controls
@@ -42,10 +43,17 @@ src/
     model.ts                    Versioned canvas, layout, cell and project types
     render.ts                   Shared Canvas 2D preview and export renderer
     storage.ts                  IndexedDB asset and recovery adapter
+  features/device-mockups/      Device Mockups catalog, renderer, editor and storage
+    device-mockups-editor.tsx   Catalog browsing, screen placement, projects and export
+    model.ts                    Versioned template, composition and project types
+    render.ts                   Perspective warp and preview/export renderer
+    storage.ts                  Browser recovery and image data adapter
   lib/
     tools.ts                    Typed directory registry for available tools
 docs/
   milestone-1.md                Product scope and phased implementation plan
+  milestone-3.md                Device Mockups implementation plan
+public/mockups/                 Bundled mockup scenes and thumbnails
 ```
 
 Keep new tools under their own feature folders. Put reusable platform components in `src/components` and shared tool directory metadata in `src/lib/tools.ts`. Keep route modules thin and avoid sharing tool-specific code across features.
@@ -72,10 +80,18 @@ Collage Maker creates square, portrait, landscape, story, or custom-size composi
 
 Collage Maker stores images and recovery drafts in its own IndexedDB database. Project files include the composition and source images so they can be reopened on another device. Image inputs accept PNG, JPEG, and WebP, up to 40 MB each. Canvases are limited to 4,096 pixels per side and 16 megapixels total; projects are limited to 120 MB of source images. Browser storage is best effort, so download a project file to keep a portable copy.
 
+## Device Mockups
+
+Device Mockups places a local PNG, JPEG, or WebP screenshot into a curated laptop or monitor scene. Choose a mockup, add a screenshot, then adjust fill/fit, zoom, and horizontal or vertical position inside its screen. Use **Finished** to inspect the composition without editing guides, then download PNG or JPEG at the scene's native size or twice its resolution. A project file includes the screenshot and settings so it can be opened later.
+
+The first catalog scenes are bundled in `public/mockups/` and have screen geometry in `src/features/device-mockups/catalog.ts`. Screenshots, local recovery drafts, and projects stay in the browser or in a project file; the app does not upload them. Local recovery is best-effort, so download a project file to keep a portable copy. The catalog and draft storage each have typed boundaries; future catalog hosting or account-backed project storage can be added without changing the perspective renderer. See [Milestone 3](docs/milestone-3.md) for the implementation plan and current decisions.
+
 ## Implementation notes
 
 - **Rendering:** Both tools use the browser Canvas 2D API instead of adding Konva or Fabric. Each tool uses the same renderer for its editable preview and final output, so composition scaling, clipping and layer order have one source of truth. Workspace guides and selection handles are excluded from export. Framecraft's shadow spread is rendered by expanding a filled rounded shape because Canvas 2D does not expose a native shadow-spread setting.
 - **Persistence:** Framecraft and Collage Maker use separate typed storage interfaces and IndexedDB databases. Their composition data and stable asset IDs do not depend on browser APIs, keeping each tool's domain model separate from persistence.
+- **Device Mockups:** The catalog stores normalized display corners for each scene. Canvas 2D renders the screenshot into display space with a projective warp and rounded screen mask; the same function produces the preview and download. Static mockups are loaded through a catalog interface, and local recovery uses a feature-owned IndexedDB adapter. Catalog items use stable IDs and versions so a later hosted catalog can resolve the same project references.
+- **Device Mockup assets:** The initial laptop and monitor scenes were generated specifically for this application and compressed to WebP. Their source and distribution notes are in [`public/mockups/README.md`](public/mockups/README.md).
 - **UI:** shadcn/ui components provide common controls. Shared light and dark theme tokens live in `src/app/globals.css`; button, card, control and popover styles use those tokens. `next-themes` respects the system preference and saves an explicit theme choice.
 - **Limits:** Canvas filters, memory use and export capacity vary by browser and device. Large images and output sizes can fail on constrained devices; the editor reports input, storage and export errors while preserving the current in-memory composition.
 
