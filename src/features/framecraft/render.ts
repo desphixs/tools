@@ -130,20 +130,24 @@ function drawScreenshot(ctx: CanvasRenderingContext2D, settings: ScreenshotSetti
   roundedRectPath(ctx, -width / 2, -height / 2, width, height, settings.cornerRadius);
   if (settings.shadowEnabled && settings.shadowOpacity > 0) {
     ctx.save();
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = "rgba(0,0,0,0.01)";
+    ctx.globalAlpha = settings.shadowOpacity / 100;
+    ctx.fillStyle = settings.shadowColor;
     ctx.shadowColor = settings.shadowColor;
     ctx.shadowBlur = settings.shadowBlur;
     ctx.shadowOffsetX = settings.shadowX;
     ctx.shadowOffsetY = settings.shadowY;
-    ctx.globalAlpha = settings.shadowOpacity / 100;
+    const shadowWidth = settings.shadowWidth ?? width;
+    const shadowHeight = settings.shadowHeight ?? height;
+    const spread = settings.shadowSpread;
+    roundedRectPath(
+      ctx,
+      -shadowWidth / 2 - spread,
+      -shadowHeight / 2 - spread,
+      shadowWidth + spread * 2,
+      shadowHeight + spread * 2,
+      settings.cornerRadius + spread,
+    );
     ctx.fill();
-    if (settings.shadowSpread > 0) {
-      ctx.shadowBlur = 0;
-      ctx.lineWidth = settings.shadowSpread * 2;
-      ctx.strokeStyle = settings.shadowColor;
-      ctx.stroke();
-    }
     ctx.restore();
   }
 

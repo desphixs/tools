@@ -65,6 +65,8 @@ export type ScreenshotSettings = {
   shadowBlur: number;
   shadowX: number;
   shadowY: number;
+  shadowWidth: number;
+  shadowHeight: number;
   shadowSpread: number;
 };
 
@@ -162,7 +164,9 @@ export function createDefaultComposition(): Composition {
       shadowBlur: 36,
       shadowX: 0,
       shadowY: 22,
-      shadowSpread: 2,
+      shadowWidth: 870,
+      shadowHeight: 425,
+      shadowSpread: 0,
     },
   };
 }
@@ -204,8 +208,55 @@ export function validateComposition(value: unknown): value is Composition {
     (screenshot.assetId === null || (typeof screenshot.assetId === "string" && screenshot.assetId.length > 0 && screenshot.assetId.length <= 80)) &&
     typeof screenshot.shadowEnabled === "boolean" && validColor(screenshot.shadowColor) &&
     finiteBetween(screenshot.shadowOpacity, 0, 100) && finiteBetween(screenshot.shadowBlur, 0, 200) &&
-    finiteBetween(screenshot.shadowX, -2000, 2000) && finiteBetween(screenshot.shadowY, -2000, 2000) && finiteBetween(screenshot.shadowSpread, 0, 100)
+    finiteBetween(screenshot.shadowX, -2000, 2000) && finiteBetween(screenshot.shadowY, -2000, 2000) &&
+    finiteBetween(screenshot.shadowWidth ?? screenshot.width, 60, MAX_CANVAS_DIMENSION * 2) &&
+    finiteBetween(screenshot.shadowHeight ?? screenshot.height, 60, MAX_CANVAS_DIMENSION * 2) &&
+    finiteBetween(screenshot.shadowSpread, 0, 100)
   );
+}
+
+export function normalizeComposition(composition: Composition): Composition {
+  return {
+    ...composition,
+    screenshot: {
+      ...composition.screenshot,
+      shadowWidth: composition.screenshot.shadowWidth ?? composition.screenshot.width,
+      shadowHeight: composition.screenshot.shadowHeight ?? composition.screenshot.height,
+    },
+  };
+}
+
+export function fitScreenshotToImage(
+  composition: Composition,
+  sourceWidth: number,
+  sourceHeight: number,
+  preferredWidth = composition.screenshot.width,
+): Composition {
+  if (sourceWidth <= 0 || sourceHeight <= 0 || preferredWidth <= 0) return composition;
+
+  const settings = composition.screenshot;
+  const maxWidth = Math.max(60, composition.canvas.width - 96);
+  const maxHeight = Math.max(60, composition.canvas.height - 96);
+  const scale = Math.min(preferredWidth / sourceWidth, maxWidth / sourceWidth, maxHeight / sourceHeight);
+  const width = sourceWidth * scale;
+  const height = sourceHeight * scale;
+  const shadowWidth = settings.shadowWidth ?? settings.width;
+  const shadowHeight = settings.shadowHeight ?? settings.height;
+  const shadowWidthMatchesFrame = Math.abs(shadowWidth - settings.width) < 0.01;
+  const shadowHeightMatchesFrame = Math.abs(shadowHeight - settings.height) < 0.01;
+
+  return {
+    ...composition,
+    screenshot: {
+      ...settings,
+      x: settings.x + settings.width / 2 - width / 2,
+      y: settings.y + settings.height / 2 - height / 2,
+      width,
+      height,
+      shadowWidth: shadowWidthMatchesFrame ? width : shadowWidth,
+      shadowHeight: shadowHeightMatchesFrame ? height : shadowHeight,
+    },
+  };
 }
 
 export function validateCompositionTemplate(value: unknown): value is CompositionTemplate {

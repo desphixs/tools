@@ -46,6 +46,8 @@ import {
   MAX_SOURCE_PIXELS,
   MAX_UPLOAD_BYTES,
   createDefaultComposition,
+  fitScreenshotToImage,
+  normalizeComposition,
   type Composition,
   type CompositionTemplate,
   type FramecraftAsset,
@@ -60,17 +62,41 @@ import { CanvasControls } from "./components/canvas-controls";
 import { ScreenshotControls } from "./components/screenshot-controls";
 import { canvasPresets, type CanvasPreset } from "./presets";
 
-type ActiveLayer = "background" | "screenshot";
-type ActivePanel = ActiveLayer | "layout";
+type ImageLayer = "background" | "screenshot";
+type ActiveLayer = ImageLayer | "canvas";
+type ActivePanel = ActiveLayer;
 type DragState = {
   pointerId: number;
   startX: number;
   startY: number;
   initial: Composition["screenshot"];
   mode: "move" | "resize" | "background" | "crop";
+  started: boolean;
   initialBackgroundX?: number;
   initialBackgroundY?: number;
 };
+
+function scaleScreenshotForCanvas(screenshot: Composition["screenshot"], sx: number, sy: number) {
+  const scale = screenshot.aspectLocked ? Math.min(sx, sy) : undefined;
+  const width = screenshot.width * (scale ?? sx);
+  const height = screenshot.height * (scale ?? sy);
+  const shadowWidth = screenshot.shadowWidth ?? screenshot.width;
+  const shadowHeight = screenshot.shadowHeight ?? screenshot.height;
+  const shadowWidthMatchesFrame = Math.abs(shadowWidth - screenshot.width) < 0.01;
+  const shadowHeightMatchesFrame = Math.abs(shadowHeight - screenshot.height) < 0.01;
+
+  return {
+    ...screenshot,
+    width,
+    height,
+    cornerRadius: screenshot.cornerRadius * Math.min(sx, sy),
+    shadowBlur: screenshot.shadowBlur * Math.min(sx, sy),
+    shadowX: screenshot.shadowX * sx,
+    shadowY: screenshot.shadowY * sy,
+    shadowWidth: shadowWidthMatchesFrame ? width : shadowWidth * sx,
+    shadowHeight: shadowHeightMatchesFrame ? height : shadowHeight * sy,
+  };
+}
 
 function readImage(file: Blob): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
@@ -133,7 +159,13 @@ async function decodeProject(file: File): Promise<{ composition: Composition; as
 
   const referencedIds = [raw.composition.background.assetId, raw.composition.screenshot.assetId].filter((id): id is string => typeof id === "string");
   if (referencedIds.some((id) => !seenIds.has(id))) throw new Error("This project is missing an image it needs.");
-  return { composition: raw.composition, assets };
+  let composition = normalizeComposition(raw.composition);
+  const screenshot = composition.screenshot;
+  const screenshotAsset = assets.find((asset) => asset.id === screenshot.assetId);
+  if (screenshotAsset && screenshot.aspectLocked) {
+    composition = fitScreenshotToImage(composition, screenshotAsset.width, screenshotAsset.height);
+  }
+  return { composition, assets };
 }
 
 function imageStorageError(cause: unknown, fallback: string) {
@@ -280,7 +312,7 @@ export function FramecraftEditor() {
         const [draft, localTemplates] = await Promise.all([framecraftStorage.getDraft(), framecraftStorage.listTemplates()]);
         if (!active) return;
         setTemplates(localTemplates);
-        if (draft && validateComposition(draft.composition)) setRecovery(draft.composition);
+        if (draft && validateComposition(draft.composition)) setRecovery(normalizeComposition(draft.composition));
         else if (draft) setNotice("An incomplete recovery draft could not be restored. Open a downloaded project file if you have one.");
       } catch {
         if (active) setNotice("Local storage is unavailable. You can still use the editor and download a project file.");
@@ -372,7 +404,29 @@ export function FramecraftEditor() {
 
   const patchCanvas = (patch: Partial<Composition["canvas"]>) => edit((current) => ({ ...current, canvas: { ...current.canvas, ...patch } }));
   const patchBackground = (patch: Partial<Composition["background"]>) => edit((current) => ({ ...current, background: { ...current.background, ...patch } }));
-  const patchScreenshot = (patch: Partial<Composition["screenshot"]>) => edit((current) => ({ ...current, screenshot: { ...current.screenshot, ...patch } }));
+  const patchScreenshot = (patch: Partial<Composition["screenshot"]>) => edit((current) => {
+    const settings = current.screenshot;
+    const shadowWidthMatchesFrame = Math.abs((settings.shadowWidth ?? settings.width) - settings.width) < 0.01;
+    const shadowHeightMatchesFrame = Math.abs((settings.shadowHeight ?? settings.height) - settings.height) < 0.01;
+    const screenshot = { ...settings, ...patch };
+    if ("width" in patch && shadowWidthMatchesFrame) screenshot.shadowWidth = screenshot.width;
+    if ("height" in patch && shadowHeightMatchesFrame) screenshot.shadowHeight = screenshot.height;
+    return { ...current, screenshot };
+  });
+
+  const selectPanel = (panel: ActivePanel) => {
+    setActivePanel(panel);
+    setActiveLayer(panel);
+    setMobilePanelOpen(true);
+    if (panel !== "screenshot") setCropMode(false);
+  };
+
+  const toggleScreenshotAspectLock = (locked: boolean) => oneEdit((current) => {
+    const next = { ...current, screenshot: { ...current.screenshot, aspectLocked: locked } };
+    if (!locked || !current.screenshot.assetId) return next;
+    const source = images.get(current.screenshot.assetId);
+    return source ? fitScreenshotToImage(next, source.width, source.height) : next;
+  });
 
   const setPreset = (preset: CanvasPreset) => {
     const old = compositionRef.current;
@@ -383,15 +437,9 @@ export function FramecraftEditor() {
       ...current,
       canvas: { ...current.canvas, width: nextSize.width, height: nextSize.height, preset },
       screenshot: {
-        ...current.screenshot,
+        ...scaleScreenshotForCanvas(current.screenshot, sx, sy),
         x: current.screenshot.x * sx,
         y: current.screenshot.y * sy,
-        width: current.screenshot.width * sx,
-        height: current.screenshot.height * sy,
-        cornerRadius: current.screenshot.cornerRadius * Math.min(sx, sy),
-        shadowBlur: current.screenshot.shadowBlur * Math.min(sx, sy),
-        shadowX: current.screenshot.shadowX * sx,
-        shadowY: current.screenshot.shadowY * sy,
       },
     }));
   };
@@ -411,20 +459,14 @@ export function FramecraftEditor() {
       ...state,
       canvas: { ...state.canvas, width, height, preset: "custom" },
       screenshot: {
-        ...state.screenshot,
+        ...scaleScreenshotForCanvas(state.screenshot, sx, sy),
         x: state.screenshot.x * sx,
         y: state.screenshot.y * sy,
-        width: state.screenshot.width * sx,
-        height: state.screenshot.height * sy,
-        cornerRadius: state.screenshot.cornerRadius * Math.min(sx, sy),
-        shadowBlur: state.screenshot.shadowBlur * Math.min(sx, sy),
-        shadowX: state.screenshot.shadowX * sx,
-        shadowY: state.screenshot.shadowY * sy,
       },
     }));
   };
 
-  const addImage = useCallback(async (file: File, target: ActiveLayer) => {
+  const addImage = useCallback(async (file: File, target: ImageLayer) => {
     setError(null);
     setNotice(null);
     if (!file.type.startsWith("image/") || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
@@ -460,18 +502,21 @@ export function FramecraftEditor() {
         setActivePanel("background");
         setCropMode(false);
       } else {
-        oneEdit((current) => ({
-          ...current,
-          screenshot: {
-            ...current.screenshot,
-            assetId: id,
-            cropZoom: 1,
-            cropX: 0,
-            cropY: 0,
-            x: Math.max(0, (current.canvas.width - current.screenshot.width) / 2),
-            y: Math.max(0, (current.canvas.height - current.screenshot.height) / 2),
-          },
-        }));
+        oneEdit((current) => {
+          const next = {
+            ...current,
+            screenshot: {
+              ...current.screenshot,
+              assetId: id,
+              cropZoom: 1,
+              cropX: 0,
+              cropY: 0,
+            },
+          };
+          return !current.screenshot.assetId || current.screenshot.aspectLocked
+            ? fitScreenshotToImage(next, dimensions.width, dimensions.height)
+            : next;
+        });
         setActiveLayer("screenshot");
         setActivePanel("screenshot");
         setCropMode(false);
@@ -492,7 +537,7 @@ export function FramecraftEditor() {
         ?.getAsFile();
       if (!file) return;
       event.preventDefault();
-      void addImage(file, activeLayer);
+      void addImage(file, activeLayer === "background" ? "background" : "screenshot");
     }
     window.addEventListener("paste", handlePaste);
     return () => window.removeEventListener("paste", handlePaste);
@@ -642,7 +687,7 @@ export function FramecraftEditor() {
 
   const applyTemplate = (template: CompositionTemplate) => {
     const current = compositionRef.current;
-    const next = {
+    const next = normalizeComposition({
       ...template.composition,
       screenshot: {
         ...template.composition.screenshot,
@@ -651,7 +696,7 @@ export function FramecraftEditor() {
         cropX: 0,
         cropY: 0,
       },
-    };
+    });
     oneEdit(() => next);
     setAssetRevision((v) => v + 1);
     setActiveLayer("screenshot");
@@ -714,8 +759,9 @@ export function FramecraftEditor() {
 
   const recoverDraft = () => {
     if (!recovery) return;
-    compositionRef.current = recovery;
-    setComposition(recovery);
+    const restored = normalizeComposition(recovery);
+    compositionRef.current = restored;
+    setComposition(restored);
     pastRef.current = [];
     futureRef.current = [];
     refreshHistoryAvailability();
@@ -776,18 +822,42 @@ export function FramecraftEditor() {
     event.currentTarget.focus();
     const point = pointerPosition(event);
     const current = compositionRef.current;
-    if (activeLayer === "background" && current.background.type === "image" && current.background.assetId) {
-      beginEdit();
-      dragRef.current = { pointerId: event.pointerId, startX: point.x, startY: point.y, initial: current.screenshot, initialBackgroundX: current.background.x, initialBackgroundY: current.background.y, mode: "background" };
+    const screenshotHit = current.screenshot.assetId ? hitTestScreenshot(current.screenshot, point.x, point.y) : { inside: false, resize: false };
+    if (screenshotHit.inside) {
+      selectPanel("screenshot");
+      dragRef.current = {
+        pointerId: event.pointerId,
+        startX: point.x,
+        startY: point.y,
+        initial: current.screenshot,
+        mode: cropMode ? "crop" : screenshotHit.resize ? "resize" : "move",
+        started: false,
+      };
       event.currentTarget.setPointerCapture(event.pointerId);
       return;
     }
-    if (!current.screenshot.assetId) return;
-    const hit = hitTestScreenshot(current.screenshot, point.x, point.y);
-    if (!hit.inside) return;
-    beginEdit();
-    dragRef.current = { pointerId: event.pointerId, startX: point.x, startY: point.y, initial: current.screenshot, mode: cropMode ? "crop" : hit.resize ? "resize" : "move" };
-    event.currentTarget.setPointerCapture(event.pointerId);
+    const edge = Math.max(12, Math.min(current.canvas.width, current.canvas.height) * 0.025);
+    const onCanvasEdge = point.x <= edge || point.y <= edge || point.x >= current.canvas.width - edge || point.y >= current.canvas.height - edge;
+    if (onCanvasEdge) {
+      selectPanel("canvas");
+      return;
+    }
+    if (current.background.type === "image" && current.background.assetId) {
+      selectPanel("background");
+      dragRef.current = {
+        pointerId: event.pointerId,
+        startX: point.x,
+        startY: point.y,
+        initial: current.screenshot,
+        initialBackgroundX: current.background.x,
+        initialBackgroundY: current.background.y,
+        mode: "background",
+        started: false,
+      };
+      event.currentTarget.setPointerCapture(event.pointerId);
+      return;
+    }
+    selectPanel("background");
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
@@ -796,6 +866,11 @@ export function FramecraftEditor() {
     const point = pointerPosition(event);
     const dx = point.x - drag.startX;
     const dy = point.y - drag.startY;
+    if (!drag.started) {
+      if (Math.abs(dx) + Math.abs(dy) < 0.5) return;
+      beginEdit();
+      drag.started = true;
+    }
     if (drag.mode === "background") {
       edit((current) => ({ ...current, background: { ...current.background, x: (drag.initialBackgroundX ?? 0) + (dx / current.canvas.width) * 100, y: (drag.initialBackgroundY ?? 0) + (dy / current.canvas.height) * 100 } }));
       return;
@@ -828,15 +903,28 @@ export function FramecraftEditor() {
         return { ...current, screenshot: { ...current.screenshot, x, y } };
       }
       const nextWidth = Math.max(120, start.width + dx);
-      const nextHeight = start.aspectLocked ? nextWidth * start.height / start.width : Math.max(90, start.height + dy);
-      return { ...current, screenshot: { ...current.screenshot, width: nextWidth, height: nextHeight } };
+      const source = start.assetId ? images.get(start.assetId) : undefined;
+      const sourceRatio = source ? source.width / source.height : start.width / start.height;
+      const nextHeight = start.aspectLocked ? nextWidth / sourceRatio : Math.max(90, start.height + dy);
+      const shadowWidthMatchesFrame = Math.abs((start.shadowWidth ?? start.width) - start.width) < 0.01;
+      const shadowHeightMatchesFrame = Math.abs((start.shadowHeight ?? start.height) - start.height) < 0.01;
+      return {
+        ...current,
+        screenshot: {
+          ...current.screenshot,
+          width: nextWidth,
+          height: nextHeight,
+          shadowWidth: shadowWidthMatchesFrame ? nextWidth : start.shadowWidth ?? start.width,
+          shadowHeight: shadowHeightMatchesFrame ? nextHeight : start.shadowHeight ?? start.height,
+        },
+      };
     });
   };
 
   const handlePointerEnd = (event: React.PointerEvent<HTMLCanvasElement>) => {
     if (dragRef.current?.pointerId !== event.pointerId) return;
+    if (dragRef.current.started) endEdit();
     dragRef.current = null;
-    endEdit();
   };
 
   const handleCanvasKeyDown = (event: React.KeyboardEvent<HTMLCanvasElement>) => {
@@ -858,14 +946,22 @@ export function FramecraftEditor() {
     if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) endEdit();
   };
 
-  const loadFile = (file: File | undefined, target: ActiveLayer) => { if (file) void addImage(file, target); };
+  const loadFile = (file: File | undefined, target: ImageLayer) => { if (file) void addImage(file, target); };
   const handleCanvasDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const file = event.dataTransfer.files?.[0];
-    loadFile(file, activeLayer);
+    loadFile(file, activeLayer === "background" ? "background" : "screenshot");
   };
 
   const sourceImage = composition.screenshot.assetId ? images.get(composition.screenshot.assetId) : undefined;
+  useEffect(() => {
+    if (!sourceImage || !composition.screenshot.aspectLocked) return;
+    const sourceAspect = sourceImage.width / sourceImage.height;
+    const frameAspect = composition.screenshot.width / composition.screenshot.height;
+    if (Math.abs(sourceAspect - frameAspect) < 0.001) return;
+    setCurrent(fitScreenshotToImage(composition, sourceImage.width, sourceImage.height));
+  }, [sourceImage, composition, setCurrent]);
+
   const sourceScale = sourceImage
     ? (composition.screenshot.fit === "cover"
       ? Math.max(composition.screenshot.width / sourceImage.width, composition.screenshot.height / sourceImage.height)
@@ -917,7 +1013,7 @@ export function FramecraftEditor() {
       onRemove={() => { setCropMode(false); oneEdit((current) => ({ ...current, screenshot: { ...current.screenshot, assetId: null } })); }}
       onToggleCrop={() => setCropMode((enabled) => !enabled)}
       onPatch={patchScreenshot}
-      onToggleAspectLock={(aspectLocked) => oneEdit((current) => ({ ...current, screenshot: { ...current.screenshot, aspectLocked } }))}
+      onToggleAspectLock={toggleScreenshotAspectLock}
       onShadowPreset={updateShadowPreset}
       onReset={() => { setCropMode(false); oneEdit((current) => ({ ...current, screenshot: { ...createDefaultComposition().screenshot, assetId: current.screenshot.assetId } })); }}
     />
@@ -994,7 +1090,8 @@ export function FramecraftEditor() {
               onDrop={handleCanvasDrop}
               onDragOver={(event) => event.preventDefault()}
               onClick={(event) => {
-                if (event.target === event.currentTarget && !composition.screenshot.assetId) fileScreenshotRef.current?.click();
+                if (event.target !== event.currentTarget) return;
+                selectPanel("canvas");
               }}
             >
               <div className="relative w-full transition-transform motion-reduce:transition-none" style={{ maxWidth: 980, aspectRatio: `${composition.canvas.width} / ${composition.canvas.height}`, maxHeight: "100%", transform: `scale(${workspaceZoom / 100})`, transformOrigin: "center" }}>
@@ -1010,7 +1107,7 @@ export function FramecraftEditor() {
                   onPointerCancel={handlePointerEnd}
                   onKeyDown={handleCanvasKeyDown}
                   onKeyUp={handleCanvasKeyUp}
-                  className={`absolute inset-0 h-full w-full touch-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${composition.canvas.transparentCorners ? "checkerboard" : ""} ${preview || compare ? "cursor-default" : activeLayer === "background" || cropMode ? "cursor-move" : composition.screenshot.assetId ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"} ${preview ? "ring-1 ring-border/40" : "ring-1 ring-border/35"}`}
+                  className={`absolute inset-0 h-full w-full touch-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${composition.canvas.transparentCorners ? "checkerboard" : ""} ${preview || compare || activeLayer === "canvas" ? "cursor-default" : activeLayer === "background" && composition.background.type === "image" || cropMode ? "cursor-move" : composition.screenshot.assetId ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"} ${preview ? "ring-1 ring-border/40" : "ring-1 ring-border/35"}`}
                 />
                 {!composition.screenshot.assetId && !compare && !preview && (
                   <button type="button" onClick={() => fileScreenshotRef.current?.click()} className="absolute inset-0 m-auto flex h-12 w-fit items-center gap-2 rounded-[var(--radius-control)] bg-background/90 px-4 text-sm font-medium shadow-[var(--shadow-card)] ring-1 ring-border backdrop-blur-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
@@ -1032,19 +1129,17 @@ export function FramecraftEditor() {
           <aside className={`${preview ? "hidden" : "flex"} w-full shrink-0 flex-col border-t border-border bg-card md:w-[370px] md:border-l md:border-t-0 ${mobilePanelOpen ? "max-h-[40vh]" : "max-h-[50px] overflow-hidden"} md:max-h-none md:overflow-visible`} aria-label="Editor controls">
             <Tabs value={activePanel} onValueChange={(value) => {
               const panel = value as ActivePanel;
-              setActivePanel(panel);
-              if (panel !== "layout") setActiveLayer(panel);
-              if (panel !== "screenshot") setCropMode(false);
+              selectPanel(panel);
             }} className="min-h-0 flex-1 gap-0">
               <TabsList className="h-12 w-full justify-start rounded-none border-b border-border bg-transparent px-3 max-[360px]:px-1 sm:px-4">
                 <TabsTrigger value="background" className="min-w-0 flex-1 gap-1.5 px-2 text-xs max-[360px]:gap-0 max-[360px]:px-1"><Palette className="size-3.5 max-[360px]:hidden" /> Background</TabsTrigger>
                 <TabsTrigger value="screenshot" className="min-w-0 flex-1 gap-1.5 px-2 text-xs max-[360px]:gap-0 max-[360px]:px-1"><Crop className="size-3.5 max-[360px]:hidden" /> Screenshot</TabsTrigger>
-                <TabsTrigger value="layout" className="min-w-0 flex-1 gap-1.5 px-2 text-xs max-[360px]:gap-0 max-[360px]:px-1"><Maximize2 className="size-3.5 max-[360px]:hidden" /> Canvas</TabsTrigger>
+                <TabsTrigger value="canvas" className="min-w-0 flex-1 gap-1.5 px-2 text-xs max-[360px]:gap-0 max-[360px]:px-1"><Maximize2 className="size-3.5 max-[360px]:hidden" /> Canvas</TabsTrigger>
               </TabsList>
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
                 <TabsContent value="background" className="m-0 outline-none">{backgroundControls}</TabsContent>
                 <TabsContent value="screenshot" className="m-0 outline-none">{screenshotControls}</TabsContent>
-                <TabsContent value="layout" className="m-0 outline-none">{canvasControls}</TabsContent>
+                <TabsContent value="canvas" className="m-0 outline-none">{canvasControls}</TabsContent>
               </div>
               <p className="border-t border-border px-4 py-2 text-[10px] text-muted-foreground">This browser keeps images, drafts and templates. Download a project file to keep a copy.</p>
             </Tabs>

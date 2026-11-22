@@ -46,7 +46,7 @@ Keep new tools under their own feature folders. Put reusable platform components
 
 ## Framecraft
 
-Framecraft uses a single typed composition model for output size, background, screenshot frame, crop and appearance. The editor supports landscape, square, portrait and custom canvases; solid, gradient and image backgrounds; image adjustments and overlays; screenshot positioning, resizing, crop, border and shadow controls; undo/redo; original and finished previews; local templates; local project files; recovery drafts; PNG and JPEG export.
+Framecraft uses a single typed composition model for output size, background, screenshot frame, crop and appearance. The editor supports landscape, square, portrait and custom canvases; solid, gradient and image backgrounds; image adjustments and overlays; screenshot positioning, source-ratio locking, resizing, crop, border and shadow controls; undo/redo; original and finished previews; local templates; local project files; recovery drafts; PNG and JPEG export. Clicking the screenshot, image background, or canvas edge selects its controls. Shadow width and height start matched to the screenshot and can be adjusted independently.
 
 The desktop editor uses a workspace beside its controls. On phones, the preview uses the available width and the controls move to an expandable bottom panel. The canvas can be manipulated with pointer or touch. Numeric fields and arrow keys provide alternatives for precise positioning and crop adjustments.
 
@@ -62,7 +62,7 @@ The desktop editor uses a workspace beside its controls. On phones, the preview 
 
 ## Implementation notes
 
-- **Rendering:** Framecraft uses the browser Canvas 2D API instead of adding Konva or Fabric. The same renderer draws the editable preview and final output, so composition scaling, clipping, effects and layer order have one source of truth. Workspace guides and selection handles are excluded from export. Shadow spread is approximated with a stroked outline because Canvas 2D does not expose a native shadow-spread setting.
+- **Rendering:** Framecraft uses the browser Canvas 2D API instead of adding Konva or Fabric. The same renderer draws the editable preview and final output, so composition scaling, clipping, effects and layer order have one source of truth. Workspace guides and selection handles are excluded from export. The shadow is rendered as a filled rounded shape with blur and offsets; spread expands that shape because Canvas 2D does not expose a native shadow-spread setting.
 - **Persistence:** The editor depends on the `FramecraftStorage` interface in `storage.ts`; the first implementation uses IndexedDB. Composition data and stable asset IDs do not depend on browser APIs, which leaves a boundary for a future remote storage adapter.
 - **UI:** shadcn/ui components provide common controls. Shared light and dark theme tokens live in `src/app/globals.css`; button, card, control and popover styles use those tokens. `next-themes` respects the system preference and saves an explicit theme choice.
 - **Limits:** Canvas filters, memory use and export capacity vary by browser and device. Large images and output sizes can fail on constrained devices; the editor reports input, storage and export errors while preserving the current in-memory composition.

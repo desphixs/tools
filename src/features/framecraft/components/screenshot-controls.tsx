@@ -25,6 +25,7 @@ type ScreenshotControlsProps = {
 
 export function ScreenshotControls({ composition, imageSize, lowResolution, cropMode, transaction, onUpload, onRemove, onToggleCrop, onPatch, onToggleAspectLock, onShadowPreset, onReset }: ScreenshotControlsProps) {
   const screenshot = composition.screenshot;
+  const imageAspectRatio = imageSize ? imageSize.width / imageSize.height : screenshot.width / screenshot.height;
 
   return (
     <div className="space-y-6 p-4 sm:p-5">
@@ -55,11 +56,11 @@ export function ScreenshotControls({ composition, imageSize, lowResolution, crop
           <FieldGrid>
             <NumberControl id="screenshot-x" label="Position X" value={Math.round(screenshot.x)} min={-2000} max={4000} onChange={(x) => onPatch({ x })} {...transaction} />
             <NumberControl id="screenshot-y" label="Position Y" value={Math.round(screenshot.y)} min={-2000} max={4000} onChange={(y) => onPatch({ y })} {...transaction} />
-            <NumberControl id="screenshot-width" label="Width" value={Math.round(screenshot.width)} min={120} max={MAX_CANVAS_DIMENSION} onChange={(width) => onPatch({ width, ...(screenshot.aspectLocked ? { height: width * screenshot.height / screenshot.width } : {}) })} {...transaction} />
-            <NumberControl id="screenshot-height" label="Height" value={Math.round(screenshot.height)} min={90} max={MAX_CANVAS_DIMENSION} onChange={(height) => onPatch({ height, ...(screenshot.aspectLocked ? { width: height * screenshot.width / screenshot.height } : {}) })} {...transaction} />
+            <NumberControl id="screenshot-width" label="Width" value={Math.round(screenshot.width)} min={120} max={MAX_CANVAS_DIMENSION} onChange={(width) => onPatch({ width, ...(screenshot.aspectLocked ? { height: width / imageAspectRatio } : {}) })} {...transaction} />
+            <NumberControl id="screenshot-height" label="Height" value={Math.round(screenshot.height)} min={90} max={MAX_CANVAS_DIMENSION} onChange={(height) => onPatch({ height, ...(screenshot.aspectLocked ? { width: height * imageAspectRatio } : {}) })} {...transaction} />
           </FieldGrid>
           <div className="flex items-center justify-between rounded-[var(--radius-control)] bg-muted/60 px-3 py-2.5">
-            <Label htmlFor="aspect-lock" className="text-xs font-medium">Lock aspect ratio</Label>
+            <Label htmlFor="aspect-lock" className="text-xs font-medium">Lock to image ratio</Label>
             <Switch id="aspect-lock" checked={screenshot.aspectLocked} onCheckedChange={onToggleAspectLock} />
           </div>
           <SelectField label="Image fit" value={screenshot.fit} options={[["cover", "Fill frame"], ["contain", "Fit inside"]]} onChange={(fit) => onPatch({ fit: fit as ScreenshotSettings["fit"] })} transaction={transaction} />
@@ -91,6 +92,10 @@ export function ScreenshotControls({ composition, imageSize, lowResolution, crop
                 <ColorControl id="shadow-color" label="Color" value={screenshot.shadowColor} onChange={(shadowColor) => onPatch({ shadowColor, shadowEnabled: true })} {...transaction} />
                 <RangeControl id="shadow-opacity" label="Opacity" value={screenshot.shadowOpacity} min={0} max={100} format={(number) => `${Math.round(number)}%`} onChange={(shadowOpacity) => onPatch({ shadowOpacity, shadowEnabled: true })} {...transaction} />
                 <RangeControl id="shadow-blur" label="Blur" value={screenshot.shadowBlur} min={0} max={100} format={(number) => `${Math.round(number)} px`} onChange={(shadowBlur) => onPatch({ shadowBlur, shadowEnabled: true })} {...transaction} />
+                <FieldGrid>
+                  <NumberControl id="shadow-width" label="Shadow width" value={Math.round(screenshot.shadowWidth ?? screenshot.width)} min={60} max={MAX_CANVAS_DIMENSION * 2} onChange={(shadowWidth) => onPatch({ shadowWidth, shadowEnabled: true })} {...transaction} />
+                  <NumberControl id="shadow-height" label="Shadow height" value={Math.round(screenshot.shadowHeight ?? screenshot.height)} min={60} max={MAX_CANVAS_DIMENSION * 2} onChange={(shadowHeight) => onPatch({ shadowHeight, shadowEnabled: true })} {...transaction} />
+                </FieldGrid>
                 <FieldGrid>
                   <RangeControl id="shadow-x" label="Position X" value={screenshot.shadowX} min={-80} max={80} format={(number) => `${Math.round(number)} px`} onChange={(shadowX) => onPatch({ shadowX, shadowEnabled: true })} {...transaction} />
                   <RangeControl id="shadow-y" label="Position Y" value={screenshot.shadowY} min={-80} max={80} format={(number) => `${Math.round(number)} px`} onChange={(shadowY) => onPatch({ shadowY, shadowEnabled: true })} {...transaction} />

@@ -8,11 +8,12 @@
 ## Implementation decisions and current status
 
 - The in-scope editor, local project and template flows, recovery, and image export are implemented. `pnpm lint`, `pnpm typecheck`, and `pnpm build` pass. A browser review covered the home page and editor at wide, intermediate, and phone widths (929, 768, 390, and 320 CSS pixels), both themes, screenshot placement, and the export settings dialog; a 320-pixel horizontal overflow found during review was corrected. The checkboxes below still identify deeper feature, persistence, export-fidelity, failure-path, and automated-test verification that remains outstanding.
+- Follow-up interaction fixes now select screenshot, background, or canvas controls directly from the composition; lock screenshot frames to the source image ratio; and use a filled, blurred shadow shape with editable width and height that track the screenshot while they remain unchanged. No tests, lint, type checks, or build were run for this follow-up, as requested.
 - Framecraft uses the browser Canvas 2D API as its single renderer for both preview and export. This avoids a second rendering path and keeps the first release free of a canvas-engine dependency. Crop positioning is handled in the composition model and does not modify source images.
 - Shared controls, canvas, background, and screenshot panels live in feature components. Composition types, presets, rendering, and browser persistence have separate files under `src/features/framecraft`.
 - Browser images, templates, and recovery drafts use IndexedDB behind the `FramecraftStorage` boundary. If persistent image storage is blocked, uploads and project imports can remain in session memory up to 80 MB; the user is told to download a project file for a portable copy.
 - Upload limits are 40 MB per image, 16,000 pixels per side, and 32 million pixels total. Output is limited to 4,096 pixels per side and 16 million pixels total. Project imports are limited to 80 MB.
-- Canvas shadow spread is approximated with a stroked outline because Canvas 2D has no native shadow-spread property. Rendering and storage remain browser-local; no backend or external upload is introduced in this milestone.
+- The screenshot shadow is a filled rounded shape rendered behind the screenshot, with blur, opacity, color and offsets. Shadow width and height default to the screenshot frame and remain synchronized when that frame changes until the user customizes a dimension. Spread expands the filled shape because Canvas 2D has no native shadow-spread property. Rendering and storage remain browser-local; no backend or external upload is introduced in this milestone.
 
 ## Purpose and context
 
@@ -211,7 +212,7 @@ All checkboxes start unchecked. A phase is complete only when its checkpoint is 
 
 - [x] Implement selection, move, resize handles and precise controls, default aspect-ratio locking with an unlock option, alignment, rotation, and opacity. Ensure touch, keyboard, and single-pointer non-dragging access.
 - [x] Implement reversible screenshot crop, fit/fill, zoom and repositioning within the crop. Clearly distinguish the screenshot frame's canvas size from image zoom inside it; preserve source data and define behavior when the frame or source changes.
-- [x] Add independent screenshot corner radius and border width, color, and opacity. Add none, subtle, soft, and dramatic shadow presets and fully editable color, opacity, blur, X/Y offsets, and spread. Make preview and export agree even if spread needs a custom implementation.
+- [x] Add independent screenshot corner radius and border width, color, and opacity. Add none, subtle, soft, and dramatic shadow presets and fully editable color, opacity, blur, X/Y offsets, width, height, and spread. Shadow dimensions default to the screenshot frame and can be customized separately. Make preview and export agree even if spread needs a custom implementation.
 - [x] Calculate and show a non-blocking effective-resolution warning from the actual crop, frame size, and output scale. Update it when relevant values change.
 - [ ] Test geometry at different aspect ratios, viewport sizes, rotations and output sizes, including very small or large inputs. Verify replacement and removal preserve unrelated settings.
 
