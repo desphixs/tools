@@ -1,0 +1,223 @@
+export type FramecraftAsset = {
+  id: string;
+  blob: Blob;
+  name: string;
+  mimeType: string;
+  width: number;
+  height: number;
+  updatedAt: number;
+};
+
+export type CanvasSettings = {
+  width: number;
+  height: number;
+  preset: "landscape" | "square" | "portrait" | "custom";
+  radius: number;
+  transparentCorners: boolean;
+};
+
+export type BackgroundSettings = {
+  type: "solid" | "gradient" | "image";
+  color: string;
+  gradientFrom: string;
+  gradientTo: string;
+  gradientAngle: number;
+  assetId: string | null;
+  fit: "cover" | "contain";
+  zoom: number;
+  x: number;
+  y: number;
+  blur: number;
+  opacity: number;
+  brightness: number;
+  contrast: number;
+  saturation: number;
+  grayscale: number;
+  overlayType: "none" | "solid" | "gradient";
+  overlayColor: string;
+  overlayColorEnd: string;
+  overlayAngle: number;
+  overlayOpacity: number;
+  vignette: number;
+  texture: number;
+};
+
+export type ScreenshotSettings = {
+  assetId: string | null;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  aspectLocked: boolean;
+  rotation: number;
+  opacity: number;
+  cornerRadius: number;
+  borderWidth: number;
+  borderColor: string;
+  borderOpacity: number;
+  fit: "cover" | "contain";
+  cropZoom: number;
+  cropX: number;
+  cropY: number;
+  shadowEnabled: boolean;
+  shadowColor: string;
+  shadowOpacity: number;
+  shadowBlur: number;
+  shadowX: number;
+  shadowY: number;
+  shadowSpread: number;
+};
+
+export type Composition = {
+  version: 1;
+  canvas: CanvasSettings;
+  background: BackgroundSettings;
+  screenshot: ScreenshotSettings;
+};
+
+export type ProjectFile = {
+  kind: "framecraft-project";
+  version: 1;
+  createdAt: string;
+  composition: Composition;
+  assets: Array<Omit<FramecraftAsset, "blob"> & { dataUrl: string }>;
+};
+
+export type CompositionTemplate = {
+  id: string;
+  name: string;
+  version: 1;
+  composition: Composition;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type StoredDraft = {
+  key: "active";
+  composition: Composition;
+  updatedAt: number;
+};
+
+export const MAX_CANVAS_DIMENSION = 4096;
+export const MAX_CANVAS_PIXELS = 16_000_000;
+export const MAX_UPLOAD_BYTES = 40 * 1024 * 1024;
+export const MAX_SOURCE_DIMENSION = 16_000;
+export const MAX_SOURCE_PIXELS = 32_000_000;
+
+export function createDefaultComposition(): Composition {
+  return {
+    version: 1,
+    canvas: {
+      width: 1200,
+      height: 675,
+      preset: "landscape",
+      radius: 0,
+      transparentCorners: false,
+    },
+    background: {
+      type: "gradient",
+      color: "#e9e4f8",
+      gradientFrom: "#e9e4f8",
+      gradientTo: "#f3e2dc",
+      gradientAngle: 135,
+      assetId: null,
+      fit: "cover",
+      zoom: 1,
+      x: 0,
+      y: 0,
+      blur: 0,
+      opacity: 100,
+      brightness: 100,
+      contrast: 100,
+      saturation: 100,
+      grayscale: 0,
+      overlayType: "none",
+      overlayColor: "#222033",
+      overlayColorEnd: "#443a66",
+      overlayAngle: 135,
+      overlayOpacity: 0,
+      vignette: 0,
+      texture: 0,
+    },
+    screenshot: {
+      assetId: null,
+      x: 165,
+      y: 125,
+      width: 870,
+      height: 425,
+      aspectLocked: true,
+      rotation: 0,
+      opacity: 100,
+      cornerRadius: 24,
+      borderWidth: 0,
+      borderColor: "#ffffff",
+      borderOpacity: 100,
+      fit: "cover",
+      cropZoom: 1,
+      cropX: 0,
+      cropY: 0,
+      shadowEnabled: true,
+      shadowColor: "#211933",
+      shadowOpacity: 24,
+      shadowBlur: 36,
+      shadowX: 0,
+      shadowY: 22,
+      shadowSpread: 2,
+    },
+  };
+}
+
+export function validateComposition(value: unknown): value is Composition {
+  if (!value || typeof value !== "object") return false;
+  const composition = value as Composition;
+  const { canvas, background, screenshot } = composition;
+  const finiteBetween = (candidate: unknown, min: number, max: number) => typeof candidate === "number" && Number.isFinite(candidate) && candidate >= min && candidate <= max;
+  const validColor = (candidate: unknown) => typeof candidate === "string" && /^#[0-9a-f]{6}$/i.test(candidate);
+  return (
+    composition.version === 1 &&
+    Number.isInteger(canvas?.width) && Number.isInteger(canvas?.height) &&
+    canvas.width >= 200 && canvas.height >= 200 &&
+    canvas.width <= MAX_CANVAS_DIMENSION && canvas.height <= MAX_CANVAS_DIMENSION &&
+    canvas.width * canvas.height <= MAX_CANVAS_PIXELS &&
+    finiteBetween(canvas.radius, 0, 1000) && typeof canvas.transparentCorners === "boolean" &&
+    ["landscape", "square", "portrait", "custom"].includes(canvas.preset) &&
+    ["solid", "gradient", "image"].includes(background?.type) &&
+    (background.assetId === null || (typeof background.assetId === "string" && background.assetId.length > 0 && background.assetId.length <= 80)) &&
+    (background.type !== "image" || typeof background.assetId === "string") &&
+    validColor(background.color) && validColor(background.gradientFrom) && validColor(background.gradientTo) &&
+    validColor(background.overlayColor) && validColor(background.overlayColorEnd) &&
+    ["cover", "contain"].includes(background.fit) &&
+    finiteBetween(background.zoom, 0.25, 5) && finiteBetween(background.x, -300, 300) && finiteBetween(background.y, -300, 300) &&
+    finiteBetween(background.blur, 0, 64) && finiteBetween(background.opacity, 0, 100) &&
+    finiteBetween(background.brightness, 0, 200) && finiteBetween(background.contrast, 0, 200) &&
+    finiteBetween(background.saturation, 0, 200) && finiteBetween(background.grayscale, 0, 100) &&
+    ["none", "solid", "gradient"].includes(background.overlayType) && finiteBetween(background.overlayAngle, 0, 360) &&
+    finiteBetween(background.overlayOpacity, 0, 100) && finiteBetween(background.vignette, 0, 100) && finiteBetween(background.texture, 0, 100) &&
+    finiteBetween(screenshot?.x, -MAX_CANVAS_DIMENSION * 2, MAX_CANVAS_DIMENSION * 3) &&
+    finiteBetween(screenshot?.y, -MAX_CANVAS_DIMENSION * 2, MAX_CANVAS_DIMENSION * 3) &&
+    finiteBetween(screenshot?.width, 60, MAX_CANVAS_DIMENSION * 2) && finiteBetween(screenshot?.height, 60, MAX_CANVAS_DIMENSION * 2) &&
+    typeof screenshot.aspectLocked === "boolean" && finiteBetween(screenshot.rotation, -360, 360) &&
+    finiteBetween(screenshot.opacity, 0, 100) && finiteBetween(screenshot.cornerRadius, 0, 1000) &&
+    finiteBetween(screenshot.borderWidth, 0, 100) && validColor(screenshot.borderColor) && finiteBetween(screenshot.borderOpacity, 0, 100) &&
+    ["cover", "contain"].includes(screenshot?.fit) && finiteBetween(screenshot.cropZoom, 0.25, 5) &&
+    finiteBetween(screenshot.cropX, -300, 300) && finiteBetween(screenshot.cropY, -300, 300) &&
+    (screenshot.assetId === null || (typeof screenshot.assetId === "string" && screenshot.assetId.length > 0 && screenshot.assetId.length <= 80)) &&
+    typeof screenshot.shadowEnabled === "boolean" && validColor(screenshot.shadowColor) &&
+    finiteBetween(screenshot.shadowOpacity, 0, 100) && finiteBetween(screenshot.shadowBlur, 0, 200) &&
+    finiteBetween(screenshot.shadowX, -2000, 2000) && finiteBetween(screenshot.shadowY, -2000, 2000) && finiteBetween(screenshot.shadowSpread, 0, 100)
+  );
+}
+
+export function validateCompositionTemplate(value: unknown): value is CompositionTemplate {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const template = value as CompositionTemplate;
+  return (
+    template.version === 1 &&
+    typeof template.id === "string" && template.id.length > 0 && template.id.length <= 80 &&
+    typeof template.name === "string" && template.name.trim().length > 0 && template.name.length <= 48 &&
+    typeof template.createdAt === "number" && Number.isFinite(template.createdAt) &&
+    typeof template.updatedAt === "number" && Number.isFinite(template.updatedAt) &&
+    validateComposition(template.composition) &&
+    template.composition.screenshot.assetId === null
+  );
+}
