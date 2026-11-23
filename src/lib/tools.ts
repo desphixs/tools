@@ -1,60 +1,87 @@
-import { Grid2X2, ImageIcon, Film, Laptop, Images } from "lucide-react";
+import type { ComponentType } from "react";
+import { Grid2X2, ImageIcon, Film, Laptop, Images, type LucideIcon } from "lucide-react";
+import {
+  AppStoreScreenshotsThumbnail,
+  CollageThumbnail,
+  DeviceMockupsThumbnail,
+  FramecraftThumbnail,
+  GifMakerThumbnail,
+  SocialAssetExporterThumbnail,
+} from "@/components/tool-thumbnails";
 
-export const tools = [
+export type ToolCard = {
+  id: string;
+  name: string;
+  description: string;
+  href: string;
+  category: string;
+  icon: LucideIcon;
+  status: "available";
+  thumbnail: ComponentType;
+  buttonText?: string;
+};
+
+export const tools: readonly ToolCard[] = [
   {
     id: "framecraft",
     name: "Framecraft",
-    description: "Place a product screenshot on a background and export an image.",
+    description: "Style screenshots for sharing.",
     href: "/tools/framecraft",
     category: "Image",
     icon: ImageIcon,
     status: "available",
+    thumbnail: FramecraftThumbnail,
   },
   {
     id: "collage-maker",
     name: "Collage Maker",
-    description: "Arrange photos into flexible grids and custom collages.",
+    description: "Arrange photos into one collage.",
     href: "/tools/collage-maker",
     category: "Image",
     icon: Grid2X2,
     status: "available",
+    thumbnail: CollageThumbnail,
   },
   {
     id: "device-mockups",
     name: "Device Mockups",
-    description: "Place a product screenshot inside a laptop or monitor scene.",
+    description: "Place your screen in a device.",
     href: "/tools/device-mockups",
     category: "Image",
     icon: Laptop,
     status: "available",
+    thumbnail: DeviceMockupsThumbnail,
   },
   {
     id: "app-store-screenshots",
     name: "App Store Screenshots",
-    description: "Build a consistent, store-sized screenshot gallery for iPhone and iPad.",
+    description: "Build a gallery for your app.",
     href: "/tools/app-store-screenshots",
     category: "Image",
     icon: Images,
     status: "available",
+    thumbnail: AppStoreScreenshotsThumbnail,
   },
   {
     id: "gif-maker",
     name: "GIF Maker",
-    description: "Create an animated GIF from a video or a sequence of images.",
+    description: "Turn video clips into GIFs.",
     href: "/tools/gif-maker",
     category: "Image",
     icon: Film,
     status: "available",
+    thumbnail: GifMakerThumbnail,
   },
   {
     id: "social-asset-exporter",
-    name: "Batch Social Asset Exporter",
-    description: "Create a pack of social image sizes from one original design.",
+    name: "Social Asset Pack",
+    description: "Turn one design into a social pack.",
     href: "/tools/social-asset-exporter",
     category: "Image",
     icon: Images,
     status: "available",
+    thumbnail: SocialAssetExporterThumbnail,
   },
-] as const;
+];
 
-export type Tool = (typeof tools)[number];
+export type Tool = ToolCard;

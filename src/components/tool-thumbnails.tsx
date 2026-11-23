@@ -1,10 +1,6 @@
-import type { ReactNode } from "react";
-
-type ToolId = string;
-
-function FramecraftThumbnail() {
+export function FramecraftThumbnail() {
   return (
-    <svg viewBox="0 0 360 168" className="h-36 w-full" aria-hidden="true" focusable="false">
+    <svg viewBox="0 -11 360 190" preserveAspectRatio="xMidYMid meet" className="h-full w-full" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="framecraft-surface" x1="0" y1="0" x2="1" y2="1">
           <stop stopColor="#d8ccff" />
@@ -18,7 +14,7 @@ function FramecraftThumbnail() {
           <feDropShadow dx="0" dy="8" stdDeviation="7" floodColor="#40346e" floodOpacity=".16" />
         </filter>
       </defs>
-      <rect width="360" height="168" rx="18" fill="url(#framecraft-surface)" />
+      <rect x="0" y="-11" width="360" height="190" rx="22" fill="url(#framecraft-surface)" />
       <circle cx="70" cy="33" r="55" fill="#fff" opacity=".22" />
       <circle cx="315" cy="145" r="68" fill="#fff" opacity=".18" />
       <g transform="rotate(-7 190 84)" opacity=".58">
@@ -43,10 +39,9 @@ function FramecraftThumbnail() {
     </svg>
   );
 }
-
-function CollageThumbnail() {
+export function CollageThumbnail() {
   return (
-    <svg viewBox="0 0 360 168" className="h-36 w-full" aria-hidden="true" focusable="false">
+    <svg viewBox="0 -11 360 190" preserveAspectRatio="xMidYMid meet" className="h-full w-full" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="collage-background" x1="0" y1="0" x2="1" y2="1">
           <stop stopColor="#e8eff0" />
@@ -65,7 +60,7 @@ function CollageThumbnail() {
           <feDropShadow dx="0" dy="6" stdDeviation="5" floodColor="#322e56" floodOpacity=".16" />
         </filter>
       </defs>
-      <rect width="360" height="168" rx="18" fill="url(#collage-background)" />
+      <rect x="0" y="-11" width="360" height="190" rx="22" fill="url(#collage-background)" />
       <g filter="url(#collage-shadow)" transform="rotate(-3 182 84)">
         <rect x="77" y="17" width="206" height="134" rx="16" fill="#fff" />
         <g transform="translate(85 25)">
@@ -114,9 +109,9 @@ function CollageThumbnail() {
   );
 }
 
-function DeviceMockupsThumbnail() {
+export function DeviceMockupsThumbnail() {
   return (
-    <svg viewBox="0 0 360 168" className="h-36 w-full" aria-hidden="true" focusable="false">
+    <svg viewBox="0 -11 360 190" preserveAspectRatio="xMidYMid meet" className="h-full w-full" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="mockup-room" x1="0" y1="0" x2="1" y2="1">
           <stop stopColor="#d8ccff" />
@@ -132,7 +127,7 @@ function DeviceMockupsThumbnail() {
           <feDropShadow dx="0" dy="10" stdDeviation="7" floodColor="#302b52" floodOpacity=".2" />
         </filter>
       </defs>
-      <rect width="360" height="168" rx="18" fill="url(#mockup-room)" />
+      <rect x="0" y="-11" width="360" height="190" rx="22" fill="url(#mockup-room)" />
       <circle cx="298" cy="34" r="44" fill="#fff" opacity=".23" />
       <path d="M0 133c67-19 113-5 168 6 63 13 119-14 192-4v33H0Z" fill="#fff" opacity=".28" />
       <g filter="url(#mockup-shadow)">
@@ -155,9 +150,9 @@ function DeviceMockupsThumbnail() {
   );
 }
 
-function AppStoreScreenshotsThumbnail() {
+export function AppStoreScreenshotsThumbnail() {
   return (
-    <svg viewBox="0 0 360 168" className="h-36 w-full" aria-hidden="true" focusable="false">
+    <svg viewBox="0 -11 360 190" preserveAspectRatio="xMidYMid meet" className="h-full w-full" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="store-background" x1="0" y1="0" x2="1" y2="1">
           <stop stopColor="#d9ccff" />
@@ -172,7 +167,7 @@ function AppStoreScreenshotsThumbnail() {
           <feDropShadow dx="0" dy="7" stdDeviation="5" floodColor="#443b65" floodOpacity=".18" />
         </filter>
       </defs>
-      <rect width="360" height="168" rx="18" fill="url(#store-background)" />
+      <rect x="0" y="-11" width="360" height="190" rx="22" fill="url(#store-background)" />
       <circle cx="43" cy="29" r="48" fill="#fff" opacity=".2" />
       <g filter="url(#store-shadow)" transform="rotate(-9 116 89)">
         <rect x="79" y="27" width="66" height="121" rx="15" fill="#fbfbff" stroke="#d5d2e0" />
@@ -210,9 +205,9 @@ function AppStoreScreenshotsThumbnail() {
   );
 }
 
-function SocialAssetExporterThumbnail() {
+export function SocialAssetExporterThumbnail() {
   return (
-    <svg viewBox="0 0 360 168" className="h-36 w-full" aria-hidden="true" focusable="false">
+    <svg viewBox="0 -11 360 190" preserveAspectRatio="xMidYMid meet" className="h-full w-full" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="social-background" x1="0" y1="0" x2="1" y2="1">
           <stop stopColor="#d7e9f0" />
@@ -228,7 +223,7 @@ function SocialAssetExporterThumbnail() {
           <feDropShadow dx="0" dy="6" stdDeviation="5" floodColor="#37345e" floodOpacity=".18" />
         </filter>
       </defs>
-      <rect width="360" height="168" rx="18" fill="url(#social-background)" />
+      <rect x="0" y="-11" width="360" height="190" rx="22" fill="url(#social-background)" />
       <circle cx="42" cy="35" r="53" fill="#fff" opacity=".24" />
       <circle cx="330" cy="151" r="57" fill="#fff" opacity=".2" />
 
@@ -286,9 +281,9 @@ function SocialAssetExporterThumbnail() {
   );
 }
 
-function GifMakerThumbnail() {
+export function GifMakerThumbnail() {
   return (
-    <svg viewBox="0 0 360 168" className="h-36 w-full" aria-hidden="true" focusable="false">
+    <svg viewBox="0 -11 360 190" preserveAspectRatio="xMidYMid meet" className="h-full w-full" aria-hidden="true" focusable="false">
       <defs>
         <linearGradient id="gif-background" x1="0" y1="0" x2="1" y2="1">
           <stop stopColor="#262844" />
@@ -307,7 +302,7 @@ function GifMakerThumbnail() {
           <feDropShadow dx="0" dy="8" stdDeviation="6" floodColor="#15162b" floodOpacity=".32" />
         </filter>
       </defs>
-      <rect width="360" height="168" rx="18" fill="url(#gif-background)" />
+      <rect x="0" y="-11" width="360" height="190" rx="22" fill="url(#gif-background)" />
       <circle cx="292" cy="36" r="54" fill="#c27caa" opacity=".15" />
       <circle cx="61" cy="138" r="48" fill="#74c9bf" opacity=".12" />
       <g filter="url(#gif-shadow)" transform="rotate(-5 178 78)">
@@ -337,21 +332,3 @@ function GifMakerThumbnail() {
   );
 }
 
-const thumbnails: Record<ToolId, () => ReactNode> = {
-  framecraft: FramecraftThumbnail,
-  "collage-maker": CollageThumbnail,
-  "device-mockups": DeviceMockupsThumbnail,
-  "app-store-screenshots": AppStoreScreenshotsThumbnail,
-  "social-asset-exporter": SocialAssetExporterThumbnail,
-  "gif-maker": GifMakerThumbnail,
-};
-
-export function ToolThumbnail({ toolId }: { toolId: ToolId }) {
-  const Illustration = thumbnails[toolId] ?? FramecraftThumbnail;
-
-  return (
-    <div className="overflow-hidden rounded-[calc(var(--radius-card)-0.2rem)] bg-muted">
-      <Illustration />
-    </div>
-  );
-}
