@@ -1,25 +1,58 @@
 import Link from "next/link";
 import { Frame } from "lucide-react";
 import type { MouseEventHandler } from "react";
+import { AppHeaderNavigation } from "@/components/app-header-navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { AuthControl } from "@/features/auth/components/auth-control";
 
-export function AppHeader({ showToolsLink = false, onHomeClick }: { showToolsLink?: boolean; onHomeClick?: MouseEventHandler<HTMLAnchorElement> }) {
+export function AppHeader({
+  showToolsLink = false,
+  onHomeClick,
+  authDialogOpen = false,
+  authDialogError = false,
+  authReturnTo,
+}: {
+  showToolsLink?: boolean;
+  onHomeClick?: MouseEventHandler<HTMLAnchorElement>;
+  authDialogOpen?: boolean;
+  authDialogError?: boolean;
+  authReturnTo?: string;
+}) {
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border/80 px-5 sm:px-8">
-      <Link href="/" onClick={onHomeClick} className="inline-flex items-center gap-2.5 rounded-[var(--radius-control)] font-semibold tracking-tight focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
+    <header className="app-header-surface relative z-40 mx-auto flex h-12 w-full max-w-[52rem] items-center justify-between rounded-b-2xl border-x border-b px-3.5 sm:px-4">
+      <Link
+        href="/"
+        onClick={onHomeClick}
+        aria-label="Tools home"
+        className="inline-flex shrink-0 items-center justify-center rounded-[var(--radius-control)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+      >
         <span className="flex size-8 items-center justify-center rounded-[var(--radius-control)] bg-primary text-primary-foreground">
           <Frame className="size-4" aria-hidden="true" />
         </span>
-        <span>Tools</span>
       </Link>
-      <div className="flex items-center gap-2">
+
+      <AppHeaderNavigation>
         {showToolsLink && (
-          <Link href="/" onClick={onHomeClick} className="hidden rounded-[var(--radius-control)] px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:inline-flex">
+          <Link href="/" onClick={onHomeClick} className="app-header-link sm:hidden">
             All tools
           </Link>
         )}
-        <ThemeToggle />
-      </div>
+        <Link href="/pricing" className="app-header-link">
+          Pricing
+        </Link>
+        <div className="app-header-auth">
+          <AuthControl
+            key={`${authDialogOpen}-${authDialogError}-${authReturnTo ?? ""}`}
+            initialOpen={authDialogOpen}
+            initialError={authDialogError}
+            returnTo={authReturnTo}
+          />
+        </div>
+        <div className="app-header-theme">
+          <span className="sm:hidden">Theme</span>
+          <ThemeToggle />
+        </div>
+      </AppHeaderNavigation>
     </header>
   );
 }
