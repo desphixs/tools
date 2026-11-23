@@ -209,6 +209,7 @@ export function FramecraftEditor() {
   const [workspaceZoom, setWorkspaceZoom] = useState(100);
   const [workspacePan, setWorkspacePan] = useState({ x: 0, y: 0 });
   const [isWorkspacePanning, setIsWorkspacePanning] = useState(false);
+  const [canvasCssWidth, setCanvasCssWidth] = useState(0);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(true);
   const [dirty, setDirty] = useState(false);
   const dirtyRef = useRef(false);
@@ -389,12 +390,18 @@ export function FramecraftEditor() {
     let errorTimer: number | undefined;
     try {
       const selectionColor = getComputedStyle(document.documentElement).getPropertyValue("--canvas-selection").trim() || "#7047eb";
-      renderComposition(canvas, composition, images, !preview && !compare && activeLayer === "screenshot", compare, undefined, showGuides, selectionColor, 1, showScreenshotOutline, showResizeHandle);
+      const { width, height } = composition.canvas;
+      const cssWidth = canvasCssWidth || canvas.clientWidth || width;
+      const requestedScale = (cssWidth * (workspaceZoom / 100) * (window.devicePixelRatio || 1)) / width;
+      const pixelBudgetScale = Math.sqrt(MAX_CANVAS_PIXELS / (width * height));
+      const dimensionLimitScale = (MAX_CANVAS_DIMENSION * 2) / Math.max(width, height);
+      const previewScale = Math.max(1, Math.min(requestedScale, pixelBudgetScale, dimensionLimitScale));
+      renderComposition(canvas, composition, images, !preview && !compare && activeLayer === "screenshot", compare, undefined, showGuides, selectionColor, previewScale, showScreenshotOutline, showResizeHandle);
     } catch {
       errorTimer = window.setTimeout(() => setError("The preview could not be rendered. Try reducing the canvas size or reloading the image."), 0);
     }
     return () => { if (errorTimer !== undefined) window.clearTimeout(errorTimer); };
-  }, [composition, images, activeLayer, compare, preview, showGuides, showScreenshotOutline, showResizeHandle]);
+  }, [composition, images, activeLayer, compare, preview, showGuides, showScreenshotOutline, showResizeHandle, workspaceZoom, canvasCssWidth]);
 
   useEffect(() => {
     const workspace = workspaceRef.current;
@@ -406,6 +413,19 @@ export function FramecraftEditor() {
     };
     workspace.addEventListener("wheel", handleWheel, { passive: false });
     return () => workspace.removeEventListener("wheel", handleWheel);
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const measureCanvas = () => {
+      const width = canvas.clientWidth;
+      setCanvasCssWidth((current) => current === width ? current : width);
+    };
+    const observer = new ResizeObserver(measureCanvas);
+    observer.observe(canvas);
+    measureCanvas();
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
