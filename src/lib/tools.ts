@@ -18,7 +18,6 @@ export type ToolCard = {
   icon: LucideIcon;
   status: "available";
   thumbnail: ComponentType;
-  buttonText?: string;
 };
 
 export const tools: readonly ToolCard[] = [
