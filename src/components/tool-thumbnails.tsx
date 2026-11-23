@@ -47,22 +47,26 @@ export function FramecraftThumbnail() {
 export function CollageThumbnail() {
   return (
     <svg viewBox="0 0 360 190" className="h-full w-full" aria-hidden="true" focusable="false">
-      <rect width="360" height="190" rx="22" fill="#f5f5f4" />
-      <rect x="37" y="16" width="286" height="158" rx="11" fill="#fff" stroke="#e3e3e1" />
-      <rect x="49" y="28" width="128" height="68" rx="7" fill="#e2e2e0" />
-      <circle cx="151" cy="43" r="8" fill="#f7f7f6" />
-      <path d="M49 75c17-17 34-19 50-5 14-13 30-10 45 2 11-9 21-9 33-2v26H49Z" fill="#aaa" />
-      <path d="M49 83c17-9 31-6 44 3 16-10 34-8 50 2 11-7 22-6 34 1v7H49Z" fill="#888" />
-      <rect x="184" y="28" width="127" height="68" rx="7" fill="#ededeb" />
-      <circle cx="286" cy="43" r="8" fill="#fafaf9" />
-      <path d="M184 73c19-14 36-12 51 0 17-15 33-14 49-1 10-8 18-8 27-2v26H184Z" fill="#999" />
-      <path d="M184 84c15-8 29-6 42 2 15-7 28-6 42 2 15-7 27-5 43 1v7H184Z" fill="#777" />
-      <rect x="49" y="104" width="76" height="58" rx="7" fill="#e9e9e7" />
-      <path d="M49 144c14-15 27-15 39-4 12-13 24-12 37-3v25H49Z" fill="#999" />
-      <rect x="132" y="104" width="91" height="58" rx="7" fill="#dededc" />
-      <path d="M132 142c18-13 34-12 47 0 12-12 27-11 44-2v22h-91Z" fill="#858583" />
-      <rect x="230" y="104" width="81" height="58" rx="7" fill="#ededeb" />
-      <path d="M230 143c18-12 33-11 44-2 11-8 23-8 37-2v23h-81Z" fill="#aaa" />
+      <defs>
+        <linearGradient id="collage-wash" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#e8ebf0" />
+          <stop offset="0.55" stopColor="#eeebf5" />
+          <stop offset="1" stopColor="#e7e1ef" />
+        </linearGradient>
+        <filter id="collage-board-shadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#777086" floodOpacity="0.13" />
+        </filter>
+      </defs>
+      <rect width="360" height="190" rx="22" fill="url(#collage-wash)" />
+      <rect x="81" y="17" width="198" height="156" rx="17" fill="#fff" opacity="0.86" filter="url(#collage-board-shadow)" />
+      <g>
+        <rect x="94" y="30" width="52" height="60" rx="10" fill="#ded7f3" />
+        <rect x="154" y="30" width="52" height="60" rx="10" fill="#cfc4ed" />
+        <rect x="214" y="30" width="52" height="60" rx="10" fill="#e5def5" />
+        <rect x="94" y="100" width="52" height="60" rx="10" fill="#d2c8ef" />
+        <rect x="154" y="100" width="52" height="60" rx="10" fill="#e3ddf4" />
+        <rect x="214" y="100" width="52" height="60" rx="10" fill="#d8cef1" />
+      </g>
     </svg>
   );
 }
