@@ -14,6 +14,7 @@ export default defineConfig({
     },
     env: {
       ASSETS: bindings.assets(),
+      VINEXT_KV_CACHE: bindings.kv(),
       DATABASE_URL: bindings.secret(),
       BETTER_AUTH_SECRET: bindings.secret(),
       BETTER_AUTH_URL: bindings.secret(),
