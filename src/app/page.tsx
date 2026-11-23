@@ -8,8 +8,9 @@ export default function Home() {
       <AppHeader />
       <main className="mx-auto w-full max-w-6xl px-5 pb-20 pt-12 sm:px-8 sm:pt-16">
         <div className="mb-8 max-w-xl">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Tools</h1>
-          <p className="mt-2 text-base text-muted-foreground">Choose a tool to get started.</p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Choose a tool to get started.
+          </h1>
         </div>
 
         <section aria-label="Available tools" className="grid gap-x-5 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
