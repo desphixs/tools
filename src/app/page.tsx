@@ -18,7 +18,7 @@ export default function Home() {
             return (
               <article
                 key={tool.id}
-                className="group flex aspect-[1.04] min-w-0 flex-col rounded-[var(--radius-tool-card)] bg-card p-[2%] shadow-[var(--shadow-card)] transition-transform duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                className="tool-card-surface group flex aspect-[1.04] min-w-0 flex-col rounded-[var(--radius-tool-card)] bg-card p-[2%] transition-transform duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               >
                 <div className="tool-card-thumbnail relative aspect-[1.9] w-full shrink-0 overflow-hidden rounded-[var(--radius-tool-thumbnail)] bg-muted">
                   <Thumbnail />
