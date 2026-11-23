@@ -9,13 +9,13 @@ This file is the implementation brief for Milestone 4. **Review and agree on thi
 ## Product decisions
 
 - Use **Google as the only authentication provider**.
-- The sign-in entry point is an accessible authentication dialog, not a dedicated sign-in page. The dialog contains one **Continue with Google** action. Selecting it starts Better Auth's Google OAuth flow; on successful return, the dialog closes and the user returns to the page they were using.
-- When signed out, the app header provides a sign-in action that opens the dialog. When signed in, it shows the user's Google profile identity and a sign-out action.
+- When a visitor chooses to sign in, an accessible dialog offers one **Continue with Google** action. On successful return, the dialog closes and the visitor returns to the page they were using.
+- The app header shows **Sign in** while signed out and shows the user's Google profile identity and a sign-out action while signed in.
 - Store user, session, OAuth account, and verification records in Postgres using Better Auth's Drizzle adapter.
 - Create two separate Neon projects: one for local development and one for production. Never point local development at production or share credentials between them.
 - Use Resend, email OTP, password authentication, GitHub authentication, and other social providers **nowhere in this milestone**.
 - Generate separate Better Auth secrets for development and production. Set the local auth URL to `http://localhost:3000`; set the production auth URL to the final Cloudflare hostname.
-- Proposed guest access for review: keep the tools directory public and require sign-in before entering tool routes. After Google sign-in, return the visitor to the route they originally selected. Confirm or change this access rule before implementation.
+- The tools directory and every tool route remain accessible without signing in. Google sign-in is optional and only provides an account identity and session.
 - Authentication is for identity and sessions only. Existing tools' browser-local files, projects, and editor state remain local and are not uploaded or associated with an account in this milestone.
 
 ## Existing project context
@@ -28,11 +28,11 @@ This file is the implementation brief for Milestone 4. **Review and agree on thi
 
 ## Authentication dialog and user flow
 
-1. A signed-out visitor selects **Sign in** in the header or attempts to open a protected tool.
+1. A visitor opens any tool without signing in, or selects **Sign in** in the header when they choose to use an account.
 2. An accessible dialog opens with concise context and one **Continue with Google** button.
 3. Selecting the button starts Google OAuth through Better Auth. The user completes consent on Google's page and returns to the original app location.
 4. Better Auth creates or retrieves the user and account, persists a session, and sets its secure session cookie.
-5. The dialog is replaced by the signed-in header state. If the visitor was headed to a protected tool, continue to that tool.
+5. The dialog is replaced by the signed-in header state, and the visitor returns to the page where they started sign-in.
 6. The user can sign out from the header; Better Auth invalidates the session and the app returns to its signed-out state.
 
 The dialog must support keyboard operation, visible focus, correct focus handling, an accessible title and description, pending feedback, and clear OAuth failure/retry feedback. Do not add an email entry or OTP view.
@@ -47,7 +47,7 @@ The dialog must support keyboard operation, visible focus, correct focus handlin
 - Request only the identity/profile scopes needed by the product. Treat the email returned by Google as user identity data; do not use it to send application email in this milestone.
 - Configure the Google OAuth consent screen and authorized origins/redirect URI for local development and the production Cloudflare hostname.
 - Use the Better Auth session API for authoritative server-side checks. Client UI state may reflect the session but must not be used as the only authorization check.
-- Define the guest-access policy from the product decision above. Protect the chosen tool routes on the server and preserve a safe post-login return path; do not trust arbitrary redirect URLs supplied by a request.
+- Keep every tool route public. Preserve a safe post-login return path for optional sign-in; do not trust arbitrary redirect URLs supplied by a request.
 - Add sign-out behavior and appropriate session-aware header states.
 
 ### Drizzle and Neon Postgres
@@ -116,7 +116,7 @@ Adapt names to current project conventions while keeping route code thin and aut
 **Goal:** Resolve implementation prerequisites before introducing auth or deployment assumptions.
 
 - Review the repository, current user changes, installed Next.js documentation, package scripts, UI components, and current Cloudflare/Better Auth integration requirements.
-- Confirm the guest-access rule for the directory and tool routes.
+- Keep sign-in optional; do not gate the directory or any tool route.
 - Confirm access to a Neon account for creating two projects and determine the intended production Cloudflare hostname or temporary Worker hostname.
 - Register a Google OAuth client for local and production origins/callbacks, or record the exact credentials and callback setup still needed from the user.
 - Compare Cloudflare deployment options against the app's existing Next.js features; document the choice and any compatibility gaps.
@@ -142,7 +142,7 @@ Adapt names to current project conventions while keeping route code thin and aut
 - Configure Google OAuth and Better Auth's Next.js handler/client.
 - Add the header sign-in action and accessible authentication dialog with one Google action.
 - Add signed-in profile and sign-out UI, pending/error states, and session-aware rendering.
-- Implement the reviewed route-access policy and safe post-login return behavior.
+- Keep all tool routes available to signed-out visitors and preserve the current page after optional sign-in.
 - Confirm new and returning Google identities persist users/accounts and that sessions persist across page navigation and reload.
 
 **Checkpoint:** A user can sign in with Google, return to the intended page, retain a session, and sign out; no other provider or email flow is present.
@@ -163,7 +163,7 @@ Adapt names to current project conventions while keeping route code thin and aut
 
 **Goal:** Review user-facing behavior, persistence boundaries, and operational setup.
 
-- Review signed-out and signed-in states, dialog keyboard/focus behavior, OAuth success/failure, sign-out, protected-route behavior, and safe return navigation.
+- Review signed-out and signed-in states, dialog keyboard/focus behavior, OAuth success/failure, sign-out, public tool access, and safe return navigation.
 - Confirm development and production use separate Neon projects and separate Better Auth secrets.
 - Confirm migrations are reproducible, secrets are ignored locally/not committed, and production credentials are stored in Cloudflare.
 - Run the requested repository checks only when authorized; do not add or run tests unless requested.
@@ -178,7 +178,7 @@ Adapt names to current project conventions while keeping route code thin and aut
 - Better Auth persists users, OAuth accounts, sessions, and verification data in Neon through Drizzle.
 - Separate development and production Neon projects are provisioned and configured without sharing connection strings.
 - Local development uses a generated development auth secret and `http://localhost:3000`; production has a separate secret and the deployed Cloudflare origin.
-- The reviewed guest-access policy is enforced server-side and successful OAuth returns users to their intended in-app destination.
+- Every tool can be opened while signed out. Google sign-in is optional, and successful OAuth returns users to their intended in-app destination.
 - The user can sign out and the session state updates correctly.
 - The selected Cloudflare deployment path is compatible with this app and is documented.
 - No GitHub authentication, email OTP, password login, or Resend integration is included.
@@ -186,11 +186,23 @@ Adapt names to current project conventions while keeping route code thin and aut
 
 ## Risks and decisions for review
 
-- **Route access policy:** Proposed default is a public directory with tool routes requiring Google sign-in. Decide whether to gate all tools, selected routes, or authentication only where needed.
+- **Route access policy:** All tools remain public; sign-in is optional and does not gate any tool.
 - **Google OAuth setup:** Google client credentials and authorized origins/callbacks must be configured for both local and production origins. Production callback setup depends on the final Worker/custom domain.
 - **Neon account access:** Two projects cannot be created until the Neon console is signed in or an appropriate provisioning credential is available.
 - **Cloudflare compatibility:** The project uses Next.js 16 and existing Next-specific features. The deployment adapter must be chosen only after compatibility checks.
 - **OAuth account behavior:** Define how an existing account is handled if the same Google identity/email is encountered after provider or account changes. Since Google is the sole provider in this milestone, do not add broad automatic account-linking behavior without a clear need.
 - **Session and cookie settings:** Production origin, secure cookies, and proxy headers must match Cloudflare's runtime behavior or OAuth/session callbacks can fail.
 - **Production migration safety:** Apply schema changes to production only after they are reviewed and verified on development.
+
+## Implementation status for manual review
+
+- Google-only Better Auth, the Drizzle schema/client, the auth API route, the optional header sign-in/sign-out control, and the local Neon migration are implemented. The user confirmed Google authentication is working.
+- The migration was applied to the database configured in the local `DATABASE_URL`; treat it as the development database. The production Worker currently uses the same copied `DATABASE_URL`, so it currently shares that database.
+- All tool routes are public. Signed-out visitors can open tools without seeing the authentication dialog. Signing in remains optional.
+- The vinext Worker `desphixs-tools` is deployed with the custom domain `https://tools.desphixs.com`. HTTPS checks returned HTTP 200 for the homepage, `/api/auth/get-session`, and `/tools/gif-maker`. The production Google sign-in endpoint also generated an authorization URL with the expected callback.
+- The seven local environment values were copied into Cloudflare Worker secrets at the user's request. `BETTER_AUTH_URL` was set to `https://tools.desphixs.com`; the other values were copied unchanged. No secret values are committed.
+- Production currently reuses the local `DATABASE_URL` and `BETTER_AUTH_SECRET`. A separate production Neon project/connection string and a unique production auth secret have not been provisioned, so development and production are not yet isolated.
+- Local Google sign-in was confirmed working. Complete production Google OAuth still requires the production origin and callback to be authorized in Google Cloud Console: origin `https://tools.desphixs.com`, callback `https://tools.desphixs.com/api/auth/callback/google`.
+- `RESEND_API_KEY` and `EMAIL_FROM` were copied as requested but are unused; this milestone remains Google-only.
+- On this Windows development setup, `pnpm dev` uses Next.js Webpack to avoid the current Tailwind/PostCSS native-module failure under Turbopack. `pnpm dev:vinext` is available for local Cloudflare-runtime preview.
 

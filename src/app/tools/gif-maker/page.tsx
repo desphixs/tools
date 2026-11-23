@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
+import { StructuredData } from "@/components/structured-data";
+import { createToolMetadata, createToolStructuredData } from "@/lib/seo";
 import { GifMakerEditor } from "@/features/gif-maker/gif-maker-editor";
 
-export const metadata: Metadata = {
-  title: "GIF Maker",
-  description: "Create an animated GIF from a short video or a sequence of images.",
-};
+export const metadata = createToolMetadata("gif-maker");
 
 export default function GifMakerPage() {
-  return <GifMakerEditor />;
+  return <><StructuredData data={createToolStructuredData("gif-maker")} /><GifMakerEditor /></>;
 }

@@ -16,7 +16,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Scripts
 
 ```bash
-pnpm dev                 # Start the development server
+pnpm dev                 # Start Next.js locally (Webpack for Windows/Tailwind compatibility)
 pnpm lint                # Run ESLint
 pnpm typecheck           # Type-check the application
 pnpm build               # Create a production build
@@ -102,7 +102,7 @@ Collage Maker stores images and recovery drafts in its own IndexedDB database. P
 
 ## GIF Maker
 
-GIF Maker creates an animated GIF from a local MP4 or WebM clip or an ordered sequence of 2–30 PNG, JPEG, or WebP images. Video clips can be trimmed to 10 seconds, sampled at 5–15 fps, and exported at a maximum dimension of 640 pixels. The default maximum size is 320 pixels. Image frames can be reordered with pointer or keyboard drag-and-drop. The position selector remains available to screen readers but stays visually hidden. Both modes use one shared image duration. Both modes support original, square, portrait, or landscape output, fit/crop, three output sizes, and loop-once or loop-forever behavior. On desktop, settings stay in a pinned sidebar with its own scroll area; on phones, they stack below the preview. The result is previewed and downloaded as a `.gif`.
+GIF Maker creates an animated GIF from a local MP4 or WebM clip or an ordered sequence of 2–30 PNG, JPEG, or WebP images. Video clips can be trimmed to 10 seconds, sampled at 5–15 fps, and exported at a maximum dimension of 640 pixels. The default maximum size is 320 pixels. Image frames can be reordered with pointer or keyboard drag-and-drop. A screen-reader-accessible position selector stays hidden unless keyboard-focused. Both modes use one shared image duration and support original, square, portrait, or landscape output, fit/crop, three output sizes, and loop-once or loop-forever behavior. On desktop, settings stay in a pinned sidebar with its own scroll area; on phones, they stack below the preview. The result is previewed and downloaded as a `.gif`.
 
 Source media stays in memory on the device and is cleared when the page is left. Video input is limited to 100 MB; still images are limited to 40 MB each, 120 MB combined, 16,000 pixels per side, 32 megapixels each, and 80 megapixels across the sequence. GIF output uses a white matte, has no audio, and is limited to 256 colors per frame. Browser codec support varies, and the current encoder does not apply dithering, so video and photographic output can show color banding or flicker. These limits and quality tradeoffs are documented in [Milestone 2](docs/milestone-2.md).
 
@@ -118,24 +118,45 @@ App Store Screenshots creates an ordered product-page gallery from one to ten lo
 
 ## Batch Social Asset Exporter
 
-Batch Social Asset Exporter turns one local master image into a ZIP of selected social placements. Its initial versioned catalog supports Pinterest Standard Pin (1000 × 1500), YouTube video thumbnail (3840 × 2160), YouTube Shorts thumbnail (2160 × 3840), and LinkedIn landscape single-image ad (1200 × 628). Catalog entries link to official specifications and record a verification date. Dimensions are recommended creator specs; the tool does not claim platform acceptance. See [Milestone 6](docs/milestone-6.md) for the current sources and product decisions.
+Batch Social Asset Exporter turns one local master image into a ZIP of selected social placements. Its initial versioned catalog supports Pinterest Standard Pin (1000 x 1500), YouTube video thumbnail (3840 x 2160), YouTube Shorts thumbnail (2160 x 3840), and LinkedIn landscape single-image ad (1200 x 628). Catalog entries link to official specifications and record a verification date. Dimensions are recommended creator specs; the tool does not claim platform acceptance. See [Milestone 6](docs/milestone-6.md) for the current sources and product decisions.
 
 Every output renders directly from the original PNG, JPEG, or WebP source. **Fit** is the default and preserves the complete image; **Crop** is explicit and has independent focal X/Y controls for each placement. Shared defaults can be overridden per size. Optional headline, caption, brand colors/typeface/logo, and a configurable safe inset form reusable brand settings in the project. The editor offers per-size and whole-pack previews, crop/source-resolution warnings, source/output dimensions, format, and estimated or actual file sizes. Upscaling must be acknowledged before export. PNG is the default; JPEG/WebP are explicit lossy choices with a quality control. A true no-op with matching dimensions and format can reuse the original bytes.
 
-Downloads use platform/placement folders and descriptive filenames. The bounded, uncompressed ZIP writer validates output count, paths, and aggregate bytes. A versioned `.socialpack` file includes the source image and settings; IndexedDB recovery is best effort. Source files stay in the browser or in user-controlled downloads. The app has no account, upload, cloud processing, analytics, or social posting.
+Downloads use platform/placement folders and descriptive filenames. The bounded, uncompressed ZIP writer validates output count, paths, and aggregate bytes. A versioned `.socialpack` file includes the source image and settings; IndexedDB recovery is best effort. Source files stay in the browser or in user-controlled downloads. The exporter does not require an account and keeps its images and project data local. It does not upload, cloud-process, analyze, or directly post assets.
 
 ## Implementation notes
 
 - **Rendering:** Framecraft and Collage Maker use the browser Canvas 2D API instead of adding Konva or Fabric. Each tool uses the same renderer for its editable preview and final output, so composition scaling, clipping and layer order have one source of truth. GIF Maker uses Canvas 2D to size and composite each frame before encoding. Workspace guides and selection handles are excluded from export. Framecraft's shadow spread is rendered by expanding a filled rounded shape because Canvas 2D does not expose a native shadow-spread setting.
 - **GIF encoding:** GIF Maker uses `gifenc` in a feature-local Web Worker. The browser decodes local video and seeks to sampled frames; the app sends one composited frame at a time to the worker, which quantizes its palette and appends it to the GIF. This keeps CPU-heavy encoding away from the UI and avoids loading a general-purpose WebAssembly transcoder. `gifenc` has no built-in dithering or worker wrapper, so those quality limits and the worker boundary are explicit.
-- **GIF image sorting:** GIF Maker uses `@dnd-kit/react` for pointer and touch drag-and-drop with keyboard sorting. The position selector remains available to screen readers but stays visually hidden.
-- **Persistence:** Framecraft and Collage Maker use separate typed storage interfaces and IndexedDB databases. Their composition data and stable asset IDs do not depend on browser APIs, keeping each tool's domain model separate from persistence.
+- **GIF image sorting:** GIF Maker uses `@dnd-kit/react` for pointer and touch drag-and-drop with keyboard sorting. A screen-reader-accessible position selector stays hidden unless keyboard-focused.
 - **Device Mockups:** The catalog stores normalized display corners for each scene. Canvas 2D renders the screenshot into display space with a projective warp and rounded screen mask; the same function produces the preview and download. Static mockups are loaded through a catalog interface, and local recovery uses a feature-owned IndexedDB adapter. Catalog items use stable IDs and versions so a later hosted catalog can resolve the same project references.
+- **Device Mockups:** The catalog stores normalized display corners for each scene. Canvas 2D renders the screenshot into display space with a projective warp and rounded screen mask; the same function produces the preview and download. Static mockups are loaded through a catalog interface, and local recovery uses a feature-owned IndexedDB adapter. Catalog items use stable IDs and versions so a later hosted catalog can resolve the same project references.
+- **Device Mockups asset source:** The initial laptop and monitor scenes were generated specifically for this application and compressed to WebP. Their source and distribution notes are in [`public/mockups/README.md`](public/mockups/README.md).
 - **Social asset ZIP:** The exporter uses a feature-owned ZIP store writer with UTF-8 paths and CRC-32 rather than adding an archive dependency. It caps packs at four outputs and 100 MB and stores the rendered files without recompression.
-- **Device Mockup assets:** The initial laptop and monitor scenes were generated specifically for this application and compressed to WebP. Their source and distribution notes are in [`public/mockups/README.md`](public/mockups/README.md).
+- **Persistence:** Framecraft and Collage Maker use separate typed storage interfaces and IndexedDB databases. Their composition data and stable asset IDs do not depend on browser APIs, keeping each tool's domain model separate from persistence.
 - **UI:** shadcn/ui components provide common controls. Shared light and dark theme tokens live in `src/app/globals.css`; button, card, control and popover styles use those tokens. `next-themes` respects the system preference and saves an explicit theme choice.
 - **Limits:** Canvas filters, memory use and export capacity vary by browser and device. Large images and output sizes can fail on constrained devices; the editor reports input, storage and export errors while preserving the current in-memory composition.
 
 ## Scope
 
-This release has no accounts, server-side image processing, external uploads, cloud saving, analytics, billing or direct social posting. Browser persistence and downloaded project files are separate: the browser copy is convenient and recoverable, while the downloaded project is the user's portable backup.
+The directory and all tool routes are public; Google sign-in is optional, and the Batch Social Asset Exporter does not require an account. Better Auth stores account and session records in Neon Postgres through Drizzle. Tool images, compositions, drafts, and project files remain in the browser or in files the user downloads; they are not uploaded or synced to the account. This release does not include server-side image processing, cloud project storage, analytics, billing, or direct social posting. Browser recovery is best effort; downloaded project files are portable backups.
+
+## Google authentication and database
+
+Local configuration lives in the ignored `.env.local` file. Copy the safe names and placeholders from `.env.example` if setting up a new checkout:
+
+```text
+DATABASE_URL=
+BETTER_AUTH_SECRET=
+BETTER_AUTH_URL=http://localhost:3000
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+```
+
+The Google OAuth client needs the local JavaScript origin `http://localhost:3000` and redirect URI `http://localhost:3000/api/auth/callback/google`. Better Auth uses the same callback path on the production origin. Do not expose the Google client secret or database URL to browser code.
+
+The local `DATABASE_URL` must point to the development Neon project. Generate and apply schema migrations with `pnpm db:generate` and `pnpm db:migrate`. Production must use its own Neon project, database URL, and Better Auth secret stored as Cloudflare secrets. Cloudflare deployment is not part of the local setup steps.
+
+## Search engine metadata
+
+The public directory and each tool route use canonical URLs, page-specific titles and descriptions, Open Graph and Twitter metadata, and structured data. The route metadata, keywords, and feature summaries are derived from the tool entries in `src/lib/tools.ts`; keep those fields accurate when adding or changing a tool. `src/app/sitemap.ts` lists the homepage and available tools, and `src/app/robots.ts` permits public crawling while excluding API routes. The canonical production origin is configured in `src/lib/seo.ts`.

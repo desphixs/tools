@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
+import { StructuredData } from "@/components/structured-data";
+import { createToolMetadata, createToolStructuredData } from "@/lib/seo";
 import { DeviceMockupsEditor } from "@/features/device-mockups/device-mockups-editor";
 
-export const metadata: Metadata = {
-  title: "Device Mockups",
-  description: "Place a product screenshot into laptop and monitor scenes.",
-};
+export const metadata = createToolMetadata("device-mockups");
 
 export default function DeviceMockupsPage() {
-  return <DeviceMockupsEditor />;
+  return <><StructuredData data={createToolStructuredData("device-mockups")} /><DeviceMockupsEditor /></>;
 }

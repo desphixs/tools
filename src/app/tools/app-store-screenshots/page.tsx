@@ -1,11 +1,9 @@
-import type { Metadata } from "next";
+import { StructuredData } from "@/components/structured-data";
+import { createToolMetadata, createToolStructuredData } from "@/lib/seo";
 import { AppStoreScreenshotsEditor } from "@/features/app-store-screenshots/app-store-screenshots-editor";
 
-export const metadata: Metadata = {
-  title: "App Store Screenshots",
-  description: "Build an ordered, store-sized screenshot gallery for iPhone and iPad.",
-};
+export const metadata = createToolMetadata("app-store-screenshots");
 
 export default function AppStoreScreenshotsPage() {
-  return <AppStoreScreenshotsEditor />;
+  return <><StructuredData data={createToolStructuredData("app-store-screenshots")} /><AppStoreScreenshotsEditor /></>;
 }
