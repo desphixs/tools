@@ -1,20 +1,45 @@
 export function FramecraftThumbnail() {
   return (
     <svg viewBox="0 0 360 190" className="h-full w-full" aria-hidden="true" focusable="false">
-      <rect width="360" height="190" rx="22" fill="#f5f5f4" />
-      <rect x="33" y="16" width="294" height="158" rx="11" fill="#fff" stroke="#e3e3e1" />
-      <path d="M33 44h294" stroke="#e9e9e7" />
-      <path d="M49 29h48M49 35h31" stroke="#8a8a88" strokeWidth="2" strokeLinecap="round" />
-      <rect x="49" y="54" width="262" height="105" rx="7" fill="#f0f0ee" />
-      <rect x="97" y="63" width="166" height="87" rx="7" fill="#fff" stroke="#333" strokeWidth="1.25" />
-      <rect x="105" y="71" width="150" height="54" rx="5" fill="#e5e5e3" />
-      <path d="M105 111c22-20 39-18 58-4 20-22 43-22 64-4 9-7 18-7 28-1v23H105Z" fill="#aaa" />
-      <path d="M105 115c17-10 29-9 43 1 12-7 25-6 38 3v6h-81Z" fill="#888" />
-      <path d="M113 135h48M113 141h32" stroke="#9a9a98" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="93" cy="60" r="2" fill="#777" />
-      <circle cx="267" cy="60" r="2" fill="#777" />
-      <circle cx="93" cy="153" r="2" fill="#777" />
-      <circle cx="267" cy="153" r="2" fill="#777" />
+      <defs>
+        <linearGradient id="framecraft-wash" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#d9ccfb" />
+          <stop offset="0.52" stopColor="#f4eff7" />
+          <stop offset="1" stopColor="#f2d0c3" />
+        </linearGradient>
+        <linearGradient id="framecraft-canvas" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#f0eafb" />
+          <stop offset="1" stopColor="#f8eeea" />
+        </linearGradient>
+        <filter id="framecraft-shadow" x="-20%" y="-25%" width="140%" height="160%">
+          <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#65576f" floodOpacity="0.17" />
+        </filter>
+      </defs>
+      <rect width="360" height="190" rx="22" fill="url(#framecraft-wash)" />
+      <rect
+        x="91"
+        y="39"
+        width="174"
+        height="111"
+        rx="19"
+        fill="#fff"
+        opacity="0.54"
+        transform="rotate(-7 178 94)"
+      />
+      <rect
+        x="101"
+        y="31"
+        width="168"
+        height="113"
+        rx="19"
+        fill="#fff"
+        opacity="0.7"
+        transform="rotate(-4 185 87)"
+      />
+      <g transform="rotate(4 180 96)" filter="url(#framecraft-shadow)">
+        <rect x="96" y="39" width="168" height="112" rx="19" fill="#fff" />
+        <rect x="105" y="48" width="150" height="94" rx="13" fill="url(#framecraft-canvas)" />
+      </g>
     </svg>
   );
 }
