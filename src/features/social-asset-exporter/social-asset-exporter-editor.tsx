@@ -6,7 +6,6 @@ import {
   ImagePlus, LoaderCircle, Maximize2, Redo2, RotateCcw, Sparkles, Undo2, Upload,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
-import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { SOCIAL_PLACEMENTS, PLACEMENT_BY_ID, SPEC_VERIFIED_ON, type PlacementId, type SocialPlacement } from "./catalog";
 import {
@@ -537,7 +536,6 @@ export function SocialAssetExporterEditor() {
   const statusColor = error ? "border-destructive/40 bg-destructive/5 text-destructive" : "border-primary/20 bg-primary/5 text-foreground";
 
   return <div className="min-h-screen bg-background pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0">
-    <AppHeader showToolsLink />
     <input ref={sourcePicker} type="file" accept="image/png,image/jpeg,image/webp" onChange={onSourceFile} className="sr-only" aria-label="Choose master image" />
     <input ref={logoPicker} type="file" accept="image/png,image/jpeg,image/webp" onChange={onLogoFile} className="sr-only" aria-label="Choose brand logo" />
     <input ref={projectPicker} type="file" accept=".socialpack,application/json" onChange={onProjectFile} className="sr-only" aria-label="Open Social Asset Exporter project" />

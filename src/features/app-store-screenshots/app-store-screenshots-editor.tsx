@@ -1,6 +1,5 @@
 "use client";
 
-import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -544,7 +543,6 @@ export function AppStoreScreenshotsEditor() {
 
   return (
     <div className="min-h-dvh bg-background" onDrop={onDrop} onDragOver={(event) => { if (event.dataTransfer.types.includes("Files")) event.preventDefault(); }} onPaste={onPaste}>
-      <AppHeader showToolsLink />
       <input ref={backgroundInputRef} type="file" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" aria-label="Choose a background image" className="sr-only" onChange={(event) => void addBackgroundFile(event.currentTarget.files?.[0])} />
       <input ref={projectInputRef} type="file" accept=".appshots,application/json" aria-label="Open an App Store Screenshots project" className="sr-only" onChange={(event) => void importProject(event.currentTarget.files?.[0])} />
       <main className="mx-auto max-w-[1600px] px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-10">

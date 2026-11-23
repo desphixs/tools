@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -644,8 +643,7 @@ export function CollageEditor() {
   };
 
   return <main className="min-h-screen bg-background">
-    <AppHeader showToolsLink onHomeClick={guardHome} />
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col">
+    <div className="flex min-h-screen flex-col">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/80 px-3 py-2.5 sm:px-6">
         <div className="flex min-w-0 items-center gap-2"><Link href="/" onClick={guardHome} aria-label="Back to tools" className="rounded-[var(--radius-control)] p-2 text-muted-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"><ArrowLeft className="size-4" /></Link><div className="min-w-0"><h1 className="truncate text-sm font-semibold">Collage Maker</h1><p className="hidden text-[11px] text-muted-foreground sm:block">{composition.canvas.width} × {composition.canvas.height} px{dirty ? " · Unsaved changes" : ""}</p></div></div>
         <div className="flex items-center gap-1 sm:gap-2"><Button size="icon-sm" variant="ghost" aria-label="Undo" title="Undo (Ctrl/Cmd+Z)" disabled={!canUndo || Boolean(busy)} onClick={undo}><Undo2 /></Button><Button size="icon-sm" variant="ghost" aria-label="Redo" title="Redo (Ctrl/Cmd+Shift+Z)" disabled={!canRedo || Boolean(busy)} onClick={redo}><Redo2 /></Button><span className="mx-1 hidden h-6 w-px bg-border sm:block" /><Button size="sm" variant="outline" className="hidden sm:inline-flex" onClick={() => fileProjectRef.current?.click()}><FileUp /> Open</Button><Button size="sm" variant="outline" className="hidden sm:inline-flex" onClick={() => void downloadProject()} disabled={Boolean(busy)}><Download /> Save project</Button><Button size="icon-sm" variant="ghost" aria-label="Save project" title="Save project" className="sm:hidden" disabled={Boolean(busy)} onClick={() => void downloadProject()}><Download /></Button><Button size="sm" variant={preview ? "secondary" : "outline"} onClick={() => setPreview(!preview)}><Eye className="sm:mr-1" /><span className="hidden sm:inline">{preview ? "Edit" : "Preview"}</span></Button><div className="relative"><select aria-label="Export image" disabled={Boolean(busy)} onChange={(event) => { if (event.target.value) void exportImage(event.target.value as "png" | "jpeg"); event.currentTarget.value = ""; }} className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"><option value="">Export</option><option value="png">PNG</option><option value="jpeg">JPEG</option></select><Button size="sm" disabled={Boolean(busy)}><ArrowDownToLine className="sm:mr-1" /><span className="hidden sm:inline">Export</span><ChevronDown className="ml-1 size-3" /></Button></div><Button size="icon-sm" variant="ghost" aria-label="Open project" title="Open project" className="sm:hidden" onClick={() => fileProjectRef.current?.click()}><FileUp /></Button></div>

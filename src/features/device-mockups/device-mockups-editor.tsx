@@ -18,7 +18,6 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type DragEvent, type KeyboardEvent, type MouseEventHandler, type PointerEvent } from "react";
-import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -729,7 +728,6 @@ export function DeviceMockupsEditor() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <AppHeader showToolsLink onHomeClick={handleHomeNavigation} />
       <div className="flex min-h-16 flex-wrap items-center gap-3 border-b border-border px-4 py-2 sm:px-6">
         <Link href="/" onClick={handleHomeNavigation} aria-label="Back to tools" className="inline-flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
           <ArrowLeft className="size-4" />

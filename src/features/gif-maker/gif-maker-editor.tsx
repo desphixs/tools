@@ -18,7 +18,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { DragDropProvider } from "@dnd-kit/react";
 import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import type { DragEndEvent } from "@dnd-kit/react";
-import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -526,7 +525,6 @@ export function GifMakerEditor() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <AppHeader showToolsLink />
       <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-7 sm:px-6 lg:px-8 lg:pb-12">
         <div className="mb-6 flex flex-col gap-1.5">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Image tools</p>

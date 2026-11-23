@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1050,12 +1049,11 @@ export function FramecraftEditor() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader showToolsLink onHomeClick={guardHomeNavigation} />
       <input ref={fileScreenshotRef} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { loadFile(event.target.files?.[0], "screenshot"); event.currentTarget.value = ""; }} />
       <input ref={fileBackgroundRef} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { loadFile(event.target.files?.[0], "background"); event.currentTarget.value = ""; }} />
       <input ref={fileProjectRef} type="file" accept=".framecraft,application/json" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; if (file) void openProject(file); event.currentTarget.value = ""; }} />
 
-      <div className="flex h-[calc(100dvh-4rem)] min-h-[640px] flex-col">
+      <div className="flex h-dvh min-h-[640px] flex-col">
         <div className="flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-y-1 border-b border-border/80 px-3 py-1 sm:px-5">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Link href="/" onClick={guardHomeNavigation} aria-label="Back to tools" className="inline-flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"><ArrowLeft className="size-4" /></Link>
