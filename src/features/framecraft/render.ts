@@ -177,7 +177,15 @@ function drawScreenshot(ctx: CanvasRenderingContext2D, settings: ScreenshotSetti
     ctx.translate(cx, cy);
     ctx.rotate((rotation * Math.PI) / 180);
     ctx.globalAlpha = settings.borderOpacity / 100;
-    roundedRectPath(ctx, -width / 2 + settings.borderWidth / 2, -height / 2 + settings.borderWidth / 2, width - settings.borderWidth, height - settings.borderWidth, settings.cornerRadius);
+    const borderOffset = settings.borderWidth / 2 * (settings.borderPosition === "outside" ? -1 : 1);
+    roundedRectPath(
+      ctx,
+      -width / 2 + borderOffset,
+      -height / 2 + borderOffset,
+      width - borderOffset * 2,
+      height - borderOffset * 2,
+      Math.max(0, settings.cornerRadius - borderOffset),
+    );
     ctx.strokeStyle = settings.borderColor;
     ctx.lineWidth = settings.borderWidth;
     ctx.stroke();
@@ -215,14 +223,20 @@ export function renderComposition(
   jpegMatte?: string,
   showGuides = false,
   selectionColor = "#7047eb",
+  outputScale = 1,
 ) {
   const { width, height, radius, transparentCorners } = composition.canvas;
-  if (canvas.width !== width || canvas.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
+  const outputWidth = Math.round(width * outputScale);
+  const outputHeight = Math.round(height * outputScale);
+  if (canvas.width !== outputWidth || canvas.height !== outputHeight) {
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
   }
   const ctx = canvas.getContext("2d", { alpha: true });
   if (!ctx) throw new Error("Canvas rendering is not available in this browser.");
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  if (outputScale !== 1) ctx.scale(outputScale, outputScale);
   ctx.clearRect(0, 0, width, height);
 
   if (!transparentCorners || jpegMatte) {

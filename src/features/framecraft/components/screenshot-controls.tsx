@@ -78,6 +78,7 @@ export function ScreenshotControls({ composition, imageSize, lowResolution, crop
             <RangeControl id="border-width" label="Border width" value={screenshot.borderWidth} min={0} max={24} format={(number) => `${Math.round(number)} px`} onChange={(borderWidth) => onPatch({ borderWidth })} {...transaction} />
             <ColorControl id="border-color" label="Border color" value={screenshot.borderColor} onChange={(borderColor) => onPatch({ borderColor })} {...transaction} />
           </div>
+          <SelectField label="Border position" value={screenshot.borderPosition ?? "inside"} options={[["inside", "Inside screenshot"], ["outside", "Outside screenshot"]]} onChange={(borderPosition) => onPatch({ borderPosition: borderPosition as ScreenshotSettings["borderPosition"] })} transaction={transaction} />
           <RangeControl id="border-opacity" label="Border opacity" value={screenshot.borderOpacity} min={0} max={100} format={(number) => `${Math.round(number)}%`} onChange={(borderOpacity) => onPatch({ borderOpacity })} {...transaction} />
           <div className="space-y-2">
             <Label className="text-xs text-muted-foreground">Shadow</Label>

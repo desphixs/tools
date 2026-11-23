@@ -53,6 +53,7 @@ export type ScreenshotSettings = {
   opacity: number;
   cornerRadius: number;
   borderWidth: number;
+  borderPosition: "inside" | "outside";
   borderColor: string;
   borderOpacity: number;
   fit: "cover" | "contain";
@@ -152,6 +153,7 @@ export function createDefaultComposition(): Composition {
       opacity: 100,
       cornerRadius: 24,
       borderWidth: 0,
+      borderPosition: "inside",
       borderColor: "#ffffff",
       borderOpacity: 100,
       fit: "cover",
@@ -202,7 +204,9 @@ export function validateComposition(value: unknown): value is Composition {
     finiteBetween(screenshot?.width, 60, MAX_CANVAS_DIMENSION * 2) && finiteBetween(screenshot?.height, 60, MAX_CANVAS_DIMENSION * 2) &&
     typeof screenshot.aspectLocked === "boolean" && finiteBetween(screenshot.rotation, -360, 360) &&
     finiteBetween(screenshot.opacity, 0, 100) && finiteBetween(screenshot.cornerRadius, 0, 1000) &&
-    finiteBetween(screenshot.borderWidth, 0, 100) && validColor(screenshot.borderColor) && finiteBetween(screenshot.borderOpacity, 0, 100) &&
+    finiteBetween(screenshot.borderWidth, 0, 100) &&
+    (screenshot.borderPosition === undefined || ["inside", "outside"].includes(screenshot.borderPosition)) &&
+    validColor(screenshot.borderColor) && finiteBetween(screenshot.borderOpacity, 0, 100) &&
     ["cover", "contain"].includes(screenshot?.fit) && finiteBetween(screenshot.cropZoom, 0.25, 5) &&
     finiteBetween(screenshot.cropX, -300, 300) && finiteBetween(screenshot.cropY, -300, 300) &&
     (screenshot.assetId === null || (typeof screenshot.assetId === "string" && screenshot.assetId.length > 0 && screenshot.assetId.length <= 80)) &&
@@ -222,6 +226,7 @@ export function normalizeComposition(composition: Composition): Composition {
       ...composition.screenshot,
       shadowWidth: composition.screenshot.shadowWidth ?? composition.screenshot.width,
       shadowHeight: composition.screenshot.shadowHeight ?? composition.screenshot.height,
+      borderPosition: composition.screenshot.borderPosition ?? "inside",
     },
   };
 }

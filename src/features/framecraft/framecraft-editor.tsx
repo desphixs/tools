@@ -215,11 +215,14 @@ export function FramecraftEditor() {
   const [templateName, setTemplateName] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [exportFormat, setExportFormat] = useState<"png" | "jpeg">("png");
+  const [exportScale, setExportScale] = useState<1 | 2>(1);
   const [jpegQuality, setJpegQuality] = useState(92);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [historyAvailability, setHistoryAvailability] = useState({ canUndo: false, canRedo: false });
+  const canExport2x = composition.canvas.width * composition.canvas.height * 4 <= MAX_CANVAS_PIXELS;
+  const selectedExportScale: 1 | 2 = exportScale === 2 && canExport2x ? 2 : 1;
 
   const refreshHistoryAvailability = useCallback(() => {
     setHistoryAvailability({ canUndo: pastRef.current.length > 0, canRedo: futureRef.current.length > 0 });
@@ -703,14 +706,16 @@ export function FramecraftEditor() {
       const current = compositionRef.current;
       const neededAssetIds = [current.background.assetId, current.screenshot.assetId].filter((id): id is string => Boolean(id));
       if (neededAssetIds.some((id) => !images.has(id))) throw new Error("Wait for the image preview to finish loading, then export again.");
+      const canScaleCurrent2x = current.canvas.width * current.canvas.height * 4 <= MAX_CANVAS_PIXELS;
+      const outputScale: 1 | 2 = exportScale === 2 && canScaleCurrent2x ? 2 : 1;
       const output = document.createElement("canvas");
       const matte = exportFormat === "jpeg" ? "#ffffff" : undefined;
-      renderComposition(output, compositionRef.current, images, false, false, matte);
+      renderComposition(output, current, images, false, false, matte, false, "#7047eb", outputScale);
       const blob = await new Promise<Blob>((resolve, reject) => output.toBlob((result) => result ? resolve(result) : reject(new Error("The browser could not create the image. Try a smaller canvas.")), exportFormat === "jpeg" ? "image/jpeg" : "image/png", jpegQuality / 100));
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `framecraft-${compositionRef.current.canvas.width}x${compositionRef.current.canvas.height}.${exportFormat === "jpeg" ? "jpg" : "png"}`;
+      link.download = `framecraft-${output.width}x${output.height}.${exportFormat === "jpeg" ? "jpg" : "png"}`;
       link.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
       setExportDialogOpen(false);
@@ -1200,9 +1205,11 @@ export function FramecraftEditor() {
 
       <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Export image</DialogTitle><DialogDescription>{composition.canvas.width} × {composition.canvas.height} pixels. The export is rendered locally in your browser.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Export image</DialogTitle><DialogDescription>{composition.canvas.width * selectedExportScale} × {composition.canvas.height * selectedExportScale} pixels. The export is rendered locally in your browser.</DialogDescription></DialogHeader>
           <div className="space-y-4">
             <SelectField label="File format" value={exportFormat} options={[["png", "PNG · transparency supported"], ["jpeg", "JPEG · white background"]]} onChange={(value) => setExportFormat(value as "png" | "jpeg")} />
+            <SelectField label="Export resolution" value={String(selectedExportScale)} options={canExport2x ? [["1", "1× · canvas size"], ["2", "2× · double resolution"]] : [["1", "1× · canvas size"]]} onChange={(value) => setExportScale(value === "2" ? 2 : 1)} />
+            {!canExport2x && <p className="text-xs leading-5 text-muted-foreground">2× export is unavailable at this canvas size because it would exceed the 16-megapixel limit.</p>}
             {exportFormat === "jpeg" && <RangeControl id="jpeg-quality" label="JPEG quality" value={jpegQuality} min={50} max={100} format={(n) => `${Math.round(n)}%`} onChange={setJpegQuality} onStart={() => {}} onEnd={() => {}} />}
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setExportDialogOpen(false)}>Cancel</Button><Button disabled={busy !== null} onClick={() => void exportImage()}>{busy === "Rendering image…" ? <LoaderCircle className="animate-spin" /> : <ArrowDownToLine />} Download image</Button></DialogFooter>
