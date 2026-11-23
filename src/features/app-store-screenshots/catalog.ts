@@ -2,12 +2,13 @@ export const APP_STORE_SPEC_VERSION = "2026-11-23";
 
 export type ScreenshotFamily = "iphone" | "ipad";
 export type ScreenshotOrientation = "portrait" | "landscape";
-export type ScreenshotRequirementId = "iphone-dynamic-island-medium" | "ipad-13-inch";
+export type ScreenshotRequirementId = "iphone-dynamic-island-medium" | "ipad-13-inch" | "iphone-duo-outer" | "iphone-duo-inner";
 
 export type ScreenshotRequirement = {
   id: ScreenshotRequirementId;
   label: string;
   note: string;
+  status: "required" | "upcoming";
   specIds: readonly string[];
 };
 
@@ -16,13 +17,29 @@ export const SCREENSHOT_REQUIREMENTS: readonly ScreenshotRequirement[] = [
     id: "iphone-dynamic-island-medium",
     label: "iPhone Dynamic Island (medium display)",
     note: "Required for iPhone apps; choose one of the listed sizes.",
+    status: "required",
     specIds: ["iphone-63-1179", "iphone-63-1206"],
   },
   {
     id: "ipad-13-inch",
     label: "iPad 13-inch display",
     note: "Required when the app supports iPadOS; choose one of the listed sizes.",
+    status: "required",
     specIds: ["ipad-13-2064", "ipad-13-2048"],
+  },
+  {
+    id: "iphone-duo-outer",
+    label: "iPhone Duo outer display",
+    note: "Upcoming: required beginning April 2027 for apps using the iOS 27.1 SDK or later.",
+    status: "upcoming",
+    specIds: ["iphone-duo-outer"],
+  },
+  {
+    id: "iphone-duo-inner",
+    label: "iPhone Duo inner display",
+    note: "Upcoming: required beginning April 2027 for apps using the iOS 27.1 SDK or later.",
+    status: "upcoming",
+    specIds: ["iphone-duo-inner"],
   },
 ];
 
@@ -42,6 +59,8 @@ export type ScreenshotSpec = {
 export const SCREENSHOT_SPECS: readonly ScreenshotSpec[] = [
   { id: "iphone-63-1179", family: "iphone", display: "iPhone · Dynamic Island medium", deviceExamples: "iPhone 18 Pro, 17, 16, 15, 14 Pro", width: 1179, height: 2556, requirementGroupId: "iphone-dynamic-island-medium" },
   { id: "iphone-63-1206", family: "iphone", display: "iPhone · Dynamic Island medium", deviceExamples: "iPhone 18 Pro, 17, 16, 15, 14 Pro", width: 1206, height: 2622, requirementGroupId: "iphone-dynamic-island-medium" },
+  { id: "iphone-duo-outer", family: "iphone", display: "iPhone Duo · outer display", deviceExamples: "iPhone Duo outer display", width: 1398, height: 2034, requirementGroupId: "iphone-duo-outer" },
+  { id: "iphone-duo-inner", family: "iphone", display: "iPhone Duo · inner display", deviceExamples: "iPhone Duo inner display", width: 2007, height: 2853, requirementGroupId: "iphone-duo-inner" },
   { id: "iphone-69-1260", family: "iphone", display: "iPhone · Dynamic Island large", deviceExamples: "iPhone Air", width: 1260, height: 2736 },
   { id: "iphone-69-1290", family: "iphone", display: "iPhone · Dynamic Island large", deviceExamples: "iPhone 17 Pro Max, 16 Pro Max", width: 1290, height: 2796 },
   { id: "iphone-69-1320", family: "iphone", display: "iPhone · Dynamic Island large", deviceExamples: "iPhone 18 Pro Max, 16 Plus", width: 1320, height: 2868 },

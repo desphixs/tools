@@ -251,8 +251,9 @@ export function drawGalleryScreen(ctx: CanvasRenderingContext2D, project: Galler
     let frameWidth: number;
     let frameHeight: number;
     if (isPhone) {
-      if (landscape) { frameWidth = Math.min(availableWidth, availableHeight * 2.12); frameHeight = frameWidth / 2.12; }
-      else { frameHeight = Math.min(availableHeight, availableWidth / 0.485); frameWidth = frameHeight * 0.485; }
+      const portraitFrameRatio = Math.min(width, height) / Math.max(width, height) * 1.05;
+      if (landscape) { frameWidth = Math.min(availableWidth, availableHeight / portraitFrameRatio); frameHeight = frameWidth * portraitFrameRatio; }
+      else { frameHeight = Math.min(availableHeight, availableWidth / portraitFrameRatio); frameWidth = frameHeight * portraitFrameRatio; }
     } else {
       if (landscape) { frameWidth = Math.min(availableWidth, availableHeight * 1.43); frameHeight = frameWidth / 1.43; }
       else { frameWidth = Math.min(availableWidth, availableHeight * 0.74); frameHeight = frameWidth / 0.74; }
