@@ -210,6 +210,82 @@ function AppStoreScreenshotsThumbnail() {
   );
 }
 
+function SocialAssetExporterThumbnail() {
+  return (
+    <svg viewBox="0 0 360 168" className="h-36 w-full" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="social-background" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#d7e9f0" />
+          <stop offset=".52" stopColor="#e5ddfb" />
+          <stop offset="1" stopColor="#f3d8ce" />
+        </linearGradient>
+        <linearGradient id="social-art" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#56bdb7" />
+          <stop offset=".55" stopColor="#7775dc" />
+          <stop offset="1" stopColor="#eaa28c" />
+        </linearGradient>
+        <filter id="social-shadow" x="-25%" y="-25%" width="150%" height="170%">
+          <feDropShadow dx="0" dy="6" stdDeviation="5" floodColor="#37345e" floodOpacity=".18" />
+        </filter>
+      </defs>
+      <rect width="360" height="168" rx="18" fill="url(#social-background)" />
+      <circle cx="42" cy="35" r="53" fill="#fff" opacity=".24" />
+      <circle cx="330" cy="151" r="57" fill="#fff" opacity=".2" />
+
+      <g filter="url(#social-shadow)" transform="rotate(-4 91 84)">
+        <rect x="25" y="22" width="137" height="124" rx="14" fill="#fff" />
+        <rect x="33" y="30" width="121" height="108" rx="9" fill="#f5f2ff" />
+        <rect x="42" y="39" width="47" height="4" rx="2" fill="#7664c8" />
+        <rect x="42" y="47" width="30" height="3" rx="1.5" fill="#b7afd8" />
+        <rect x="42" y="57" width="103" height="49" rx="7" fill="url(#social-art)" />
+        <circle cx="124" cy="68" r="8" fill="#ffe1a1" />
+        <path d="M42 94c20-17 31-16 44-3 15-17 34-16 59 2v13H42Z" fill="#59599e" opacity=".75" />
+        <rect x="42" y="113" width="62" height="4" rx="2" fill="#6557b0" />
+        <rect x="42" y="122" width="82" height="3" rx="1.5" fill="#c4bfd8" />
+      </g>
+
+      <path d="M169 83h27m0 0c12 0 14-36 28-36m-28 36c12 0 13 8 28 8m-28-8c12 0 13 43 28 43" fill="none" stroke="#7b70bd" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="3 5" opacity=".72" />
+      <circle cx="197" cy="83" r="5" fill="#fff" stroke="#8b7bd4" strokeWidth="2" />
+
+      <g filter="url(#social-shadow)">
+        <rect x="229" y="22" width="48" height="108" rx="10" fill="#fff" />
+        <rect x="234" y="27" width="38" height="98" rx="7" fill="#f3efff" />
+        <rect x="239" y="33" width="28" height="25" rx="4" fill="url(#social-art)" />
+        <circle cx="259" cy="39" r="4" fill="#ffe1a1" />
+        <path d="M239 52c7-6 11-7 16-2 4-5 7-5 12-2v10h-28Z" fill="#5c599e" />
+        <rect x="239" y="64" width="23" height="3" rx="1.5" fill="#7163c3" />
+        <rect x="239" y="71" width="27" height="2.5" rx="1.25" fill="#beb8d5" />
+        <rect x="239" y="77" width="22" height="2.5" rx="1.25" fill="#beb8d5" />
+        <rect x="239" y="87" width="28" height="30" rx="4" fill="#e1dbf7" />
+        <path d="m239 109 9-11 7 7 5-5 7 8v9h-28Z" fill="#8c80cf" />
+
+        <rect x="289" y="24" width="53" height="53" rx="10" fill="#fff" />
+        <rect x="294" y="29" width="43" height="43" rx="7" fill="#f3efff" />
+        <rect x="299" y="34" width="33" height="20" rx="4" fill="url(#social-art)" />
+        <circle cx="324" cy="39" r="4" fill="#ffe1a1" />
+        <path d="M299 50c8-7 13-6 19-1 4-5 8-6 14-2v7h-33Z" fill="#5c599e" />
+        <rect x="299" y="59" width="19" height="3" rx="1.5" fill="#7163c3" />
+        <rect x="321" y="59" width="11" height="3" rx="1.5" fill="#c2bdd7" />
+
+        <rect x="286" y="94" width="60" height="39" rx="9" fill="#fff" />
+        <rect x="291" y="99" width="50" height="29" rx="6" fill="#f3efff" />
+        <rect x="296" y="104" width="22" height="19" rx="4" fill="url(#social-art)" />
+        <circle cx="312" cy="108" r="3" fill="#ffe1a1" />
+        <path d="m296 119 8-8 6 6 4-4 4 5v5h-22Z" fill="#5c599e" />
+        <rect x="322" y="105" width="14" height="3" rx="1.5" fill="#7163c3" />
+        <rect x="322" y="112" width="12" height="2.5" rx="1.25" fill="#beb8d5" />
+        <rect x="322" y="118" width="14" height="2.5" rx="1.25" fill="#beb8d5" />
+      </g>
+
+      <g transform="translate(185 119)">
+        <rect width="39" height="25" rx="12.5" fill="#fff" />
+        <text x="19.5" y="17" textAnchor="middle" fill="#6759af" fontFamily="sans-serif" fontSize="12" fontWeight="700">3 sizes</text>
+      </g>
+      <path d="m319 15 3 6 6 3-6 3-3 6-3-6-6-3 6-3Z" fill="#fff" opacity=".85" />
+    </svg>
+  );
+}
+
 function GifMakerThumbnail() {
   return (
     <svg viewBox="0 0 360 168" className="h-36 w-full" aria-hidden="true" focusable="false">
@@ -266,6 +342,7 @@ const thumbnails: Record<ToolId, () => ReactNode> = {
   "collage-maker": CollageThumbnail,
   "device-mockups": DeviceMockupsThumbnail,
   "app-store-screenshots": AppStoreScreenshotsThumbnail,
+  "social-asset-exporter": SocialAssetExporterThumbnail,
   "gif-maker": GifMakerThumbnail,
 };
 
