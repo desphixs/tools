@@ -1,4 +1,4 @@
-import { Grid2X2, ImageIcon, Laptop } from "lucide-react";
+import { Grid2X2, ImageIcon, Film, Laptop } from "lucide-react";
 
 export const tools = [
   {
@@ -26,6 +26,15 @@ export const tools = [
     href: "/tools/device-mockups",
     category: "Image",
     icon: Laptop,
+    status: "available",
+  },
+  {
+    id: "gif-maker",
+    name: "GIF Maker",
+    description: "Create an animated GIF from a video or a sequence of images.",
+    href: "/tools/gif-maker",
+    category: "Image",
+    icon: Film,
     status: "available",
   },
 ] as const;
