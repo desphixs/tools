@@ -117,7 +117,7 @@ function drawBackground(ctx: CanvasRenderingContext2D, composition: Composition,
   }
 }
 
-function drawScreenshot(ctx: CanvasRenderingContext2D, settings: ScreenshotSettings, loaded: LoadedImage | undefined, selected: boolean, selectionColor: string) {
+function drawScreenshot(ctx: CanvasRenderingContext2D, settings: ScreenshotSettings, loaded: LoadedImage | undefined, selected: boolean, selectionColor: string, showSelectionOutline: boolean) {
   if (!settings.assetId || !loaded) return;
   const { x, y, width, height, rotation } = settings;
   const cx = x + width / 2;
@@ -216,11 +216,13 @@ function drawScreenshot(ctx: CanvasRenderingContext2D, settings: ScreenshotSetti
     ctx.translate(cx, cy);
     ctx.rotate((rotation * Math.PI) / 180);
     ctx.globalAlpha = 1;
-    ctx.strokeStyle = selectionColor;
-    ctx.lineWidth = Math.max(1.5, width / 450);
-    ctx.setLineDash([8, 6]);
-    roundedRectPath(ctx, -width / 2 - 2, -height / 2 - 2, width + 4, height + 4, settings.cornerRadius);
-    ctx.stroke();
+    if (showSelectionOutline) {
+      ctx.strokeStyle = selectionColor;
+      ctx.lineWidth = Math.max(1.5, width / 450);
+      ctx.setLineDash([8, 6]);
+      roundedRectPath(ctx, -width / 2 - 2, -height / 2 - 2, width + 4, height + 4, settings.cornerRadius);
+      ctx.stroke();
+    }
     ctx.setLineDash([]);
     ctx.fillStyle = "#ffffff";
     ctx.strokeStyle = selectionColor;
@@ -243,6 +245,7 @@ export function renderComposition(
   showGuides = false,
   selectionColor = "#7047eb",
   outputScale = 1,
+  showSelectionOutline = true,
 ) {
   const { width, height, radius, transparentCorners } = composition.canvas;
   const outputWidth = Math.round(width * outputScale);
@@ -298,7 +301,7 @@ export function renderComposition(
       }
       ctx.restore();
     }
-    drawScreenshot(ctx, composition.screenshot, composition.screenshot.assetId ? images.get(composition.screenshot.assetId) : undefined, selected, selectionColor);
+    drawScreenshot(ctx, composition.screenshot, composition.screenshot.assetId ? images.get(composition.screenshot.assetId) : undefined, selected, selectionColor, showSelectionOutline);
   }
   ctx.restore();
 

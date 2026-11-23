@@ -71,10 +71,12 @@ type DragState = {
   startX: number;
   startY: number;
   initial: Composition["screenshot"];
-  mode: "move" | "resize" | "background" | "crop";
+  mode: "move" | "resize" | "background" | "crop" | "pan";
   started: boolean;
   initialBackgroundX?: number;
   initialBackgroundY?: number;
+  initialPanX?: number;
+  initialPanY?: number;
 };
 
 function readImage(file: Blob): Promise<{ width: number; height: number }> {
@@ -199,7 +201,10 @@ export function FramecraftEditor() {
   const [compare, setCompare] = useState(false);
   const [preview, setPreview] = useState(false);
   const [showGuides, setShowGuides] = useState(true);
+  const [showScreenshotOutline, setShowScreenshotOutline] = useState(true);
   const [workspaceZoom, setWorkspaceZoom] = useState(100);
+  const [workspacePan, setWorkspacePan] = useState({ x: 0, y: 0 });
+  const [isWorkspacePanning, setIsWorkspacePanning] = useState(false);
   const [mobilePanelOpen, setMobilePanelOpen] = useState(true);
   const [dirty, setDirty] = useState(false);
   const dirtyRef = useRef(false);
@@ -352,12 +357,12 @@ export function FramecraftEditor() {
     let errorTimer: number | undefined;
     try {
       const selectionColor = getComputedStyle(document.documentElement).getPropertyValue("--canvas-selection").trim() || "#7047eb";
-      renderComposition(canvas, composition, images, !preview && !compare && activeLayer === "screenshot", compare, undefined, showGuides, selectionColor);
+      renderComposition(canvas, composition, images, !preview && !compare && activeLayer === "screenshot", compare, undefined, showGuides, selectionColor, 1, showScreenshotOutline);
     } catch {
       errorTimer = window.setTimeout(() => setError("The preview could not be rendered. Try reducing the canvas size or reloading the image."), 0);
     }
     return () => { if (errorTimer !== undefined) window.clearTimeout(errorTimer); };
-  }, [composition, images, activeLayer, compare, preview, showGuides]);
+  }, [composition, images, activeLayer, compare, preview, showGuides, showScreenshotOutline]);
 
   useEffect(() => {
     const workspace = workspaceRef.current;
@@ -365,7 +370,7 @@ export function FramecraftEditor() {
     const handleWheel = (event: WheelEvent) => {
       if (!event.ctrlKey || event.deltaY === 0) return;
       event.preventDefault();
-      setWorkspaceZoom((zoom) => Math.min(150, Math.max(50, zoom - event.deltaY * 0.1)));
+      setWorkspaceZoom((zoom) => Math.min(350, Math.max(50, zoom - event.deltaY * 0.1)));
     };
     workspace.addEventListener("wheel", handleWheel, { passive: false });
     return () => workspace.removeEventListener("wheel", handleWheel);
@@ -801,6 +806,23 @@ export function FramecraftEditor() {
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (event.ctrlKey) {
+      event.preventDefault();
+      setIsWorkspacePanning(true);
+      const current = compositionRef.current;
+      dragRef.current = {
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        initial: current.screenshot,
+        mode: "pan",
+        started: true,
+        initialPanX: workspacePan.x,
+        initialPanY: workspacePan.y,
+      };
+      event.currentTarget.setPointerCapture(event.pointerId);
+      return;
+    }
     if (preview || compare) return;
     event.currentTarget.focus();
     const point = pointerPosition(event);
@@ -846,6 +868,13 @@ export function FramecraftEditor() {
   const handlePointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
+    if (drag.mode === "pan") {
+      setWorkspacePan({
+        x: (drag.initialPanX ?? 0) + event.clientX - drag.startX,
+        y: (drag.initialPanY ?? 0) + event.clientY - drag.startY,
+      });
+      return;
+    }
     const point = pointerPosition(event);
     const dx = point.x - drag.startX;
     const dy = point.y - drag.startY;
@@ -906,7 +935,8 @@ export function FramecraftEditor() {
 
   const handlePointerEnd = (event: React.PointerEvent<HTMLCanvasElement>) => {
     if (dragRef.current?.pointerId !== event.pointerId) return;
-    if (dragRef.current.started) endEdit();
+    if (dragRef.current.mode === "pan") setIsWorkspacePanning(false);
+    else if (dragRef.current.started) endEdit();
     dragRef.current = null;
   };
 
@@ -990,12 +1020,14 @@ export function FramecraftEditor() {
     <ScreenshotControls
       composition={composition}
       imageSize={sourceImage ? { width: sourceImage.width, height: sourceImage.height } : undefined}
+      showSelectionOutline={showScreenshotOutline}
       lowResolution={lowResolution}
       cropMode={cropMode}
       transaction={actionControlProps}
       onUpload={() => fileScreenshotRef.current?.click()}
       onRemove={() => { setCropMode(false); oneEdit((current) => ({ ...current, screenshot: { ...current.screenshot, assetId: null } })); }}
       onToggleCrop={() => setCropMode((enabled) => !enabled)}
+      onToggleSelectionOutline={setShowScreenshotOutline}
       onPatch={patchScreenshot}
       onToggleAspectLock={toggleScreenshotAspectLock}
       onShadowPreset={updateShadowPreset}
@@ -1103,8 +1135,8 @@ export function FramecraftEditor() {
               </div>
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <Button size="icon-xs" variant="ghost" className="max-[360px]:hidden" aria-label="Zoom out" disabled={workspaceZoom <= 50} onClick={() => setWorkspaceZoom((zoom) => Math.max(50, zoom - 10))}><ZoomOut /></Button>
-                <button type="button" onClick={() => setWorkspaceZoom(100)} className="min-w-9 rounded px-1 py-1 tabular-nums hover:bg-muted" aria-label="Fit canvas to workspace">{Math.round(workspaceZoom)}%</button>
-                <Button size="icon-xs" variant="ghost" className="max-[360px]:hidden" aria-label="Zoom in" disabled={workspaceZoom >= 150} onClick={() => setWorkspaceZoom((zoom) => Math.min(150, zoom + 10))}><ZoomIn /></Button>
+                <button type="button" onClick={() => { setWorkspaceZoom(100); setWorkspacePan({ x: 0, y: 0 }); }} className="min-w-9 rounded px-1 py-1 tabular-nums hover:bg-muted" aria-label="Fit canvas to workspace">{Math.round(workspaceZoom)}%</button>
+                <Button size="icon-xs" variant="ghost" className="max-[360px]:hidden" aria-label="Zoom in" disabled={workspaceZoom >= 350} onClick={() => setWorkspaceZoom((zoom) => Math.min(350, zoom + 10))}><ZoomIn /></Button>
                 <span className="ml-1 hidden sm:inline">{composition.canvas.width} × {composition.canvas.height}</span>
                 <span className="hidden lg:inline">PNG · JPEG</span>
               </div>
@@ -1118,7 +1150,7 @@ export function FramecraftEditor() {
                 selectPanel("canvas");
               }}
             >
-              <div className="relative w-full transition-transform motion-reduce:transition-none" style={{ maxWidth: 980, aspectRatio: `${composition.canvas.width} / ${composition.canvas.height}`, maxHeight: "100%", transform: `scale(${workspaceZoom / 100})`, transformOrigin: "center" }}>
+              <div className={`relative w-full ${isWorkspacePanning ? "" : "transition-transform"} motion-reduce:transition-none`} style={{ maxWidth: 980, aspectRatio: `${composition.canvas.width} / ${composition.canvas.height}`, maxHeight: "100%", transform: `translate(${workspacePan.x}px, ${workspacePan.y}px) scale(${workspaceZoom / 100})`, transformOrigin: "center" }}>
                 <canvas
                   ref={canvasRef}
                   aria-label={compare ? "Original screenshot preview" : cropMode ? "Composition canvas. Use arrow keys to reposition the screenshot crop." : "Composition canvas. Use arrow keys to move the selected screenshot."}
@@ -1142,7 +1174,7 @@ export function FramecraftEditor() {
               </div>
             </div>
             <div className="flex h-10 shrink-0 items-center justify-between px-3 text-[11px] text-muted-foreground sm:px-5">
-              <span className="hidden items-center gap-1.5 sm:inline-flex"><CircleHelp className="size-3.5" />{cropMode ? "Drag inside the frame or use arrow keys to adjust the crop" : "Drag to move · drag corner to resize · arrow keys for precise movement"}</span>
+              <span className="hidden items-center gap-1.5 sm:inline-flex"><CircleHelp className="size-3.5" />{cropMode ? "Drag inside the frame or use arrow keys to adjust the crop" : "Drag to move · drag corner to resize · Ctrl+drag to pan · arrow keys to move precisely"}</span>
               <span className="sm:hidden">Use settings below to adjust the image</span>
               <Button variant="ghost" size="sm" className={`h-7 gap-1.5 px-2 text-[11px] ${preview ? "invisible" : ""}`} onClick={() => setMobilePanelOpen((open) => !open)} aria-expanded={mobilePanelOpen}>
                 {mobilePanelOpen ? "Hide controls" : "Show controls"}<ChevronDown className={`size-3.5 transition-transform md:hidden ${mobilePanelOpen ? "rotate-180" : ""}`} />
