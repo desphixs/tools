@@ -23,7 +23,7 @@ export type ToolCard = {
 export const tools: readonly ToolCard[] = [
   {
     id: "framecraft",
-    name: "Framecraft",
+    name: "Screenshot Styler",
     description: "Style screenshots for sharing.",
     href: "/tools/framecraft",
     category: "Image",

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { ToolBrandMark } from "@/components/tool-brand-mark";
 import { SOCIAL_PLACEMENTS, PLACEMENT_BY_ID, SPEC_VERIFIED_ON, type PlacementId, type SocialPlacement } from "./catalog";
 import {
   createDefaultComposition, effectiveSettings, isSupportedMimeType, MAX_LOGO_BYTES, MAX_OUTPUT_PIXELS, MAX_PACK_OUTPUT_PIXELS, MAX_PACK_OUTPUTS,
@@ -540,10 +541,14 @@ export function SocialAssetExporterEditor() {
     <input ref={logoPicker} type="file" accept="image/png,image/jpeg,image/webp" onChange={onLogoFile} className="sr-only" aria-label="Choose brand logo" />
     <input ref={projectPicker} type="file" accept=".socialpack,application/json" onChange={onProjectFile} className="sr-only" aria-label="Open Social Asset Exporter project" />
     <main className="mx-auto max-w-[1600px] px-3 pb-20 pt-4 sm:px-5 lg:px-6 lg:pb-8">
+      <div className="mb-2 flex items-center gap-2">
+        <Link href="/" aria-label="Back to tools" className="inline-flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><ArrowLeft className="size-4" /></Link>
+        <ToolBrandMark />
+        <h1 className="text-sm font-semibold">Social Asset Pack</h1>
+      </div>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <Link href="/" className="mb-2 inline-flex min-h-9 items-center gap-1 rounded-[var(--radius-control)] text-xs text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:hidden"><ArrowLeft className="size-3.5" />All tools</Link>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">Image tools</p>
+          <p className="mb-1 text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">Pack name</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             <input aria-label="Pack name" value={composition.packName} maxLength={120} onFocus={beginTransaction} onBlur={(event) => { if (!event.currentTarget.value.trim()) updateField("packName", "Social asset pack"); endTransaction(); }} onChange={(event) => updateField("packName", event.target.value)} className="min-w-0 max-w-full border-0 bg-transparent p-0 text-xl font-semibold tracking-tight outline-none focus-visible:ring-2 focus-visible:ring-ring/50 sm:text-2xl" />
             <span className="rounded-full border border-border px-2 py-1 text-[10px] text-muted-foreground">{selectedIds.length} placements</span>

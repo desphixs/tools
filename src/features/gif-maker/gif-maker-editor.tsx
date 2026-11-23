@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   Download,
+  ArrowLeft,
   FileImage,
   FileVideo,
   GripVertical,
@@ -19,6 +21,7 @@ import { DragDropProvider } from "@dnd-kit/react";
 import { isSortable, useSortable } from "@dnd-kit/react/sortable";
 import type { DragEndEvent } from "@dnd-kit/react";
 import { Button } from "@/components/ui/button";
+import { ToolBrandMark } from "@/components/tool-brand-mark";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -527,9 +530,12 @@ export function GifMakerEditor() {
     <div className="min-h-screen bg-background text-foreground">
       <main className="mx-auto w-full max-w-7xl px-4 pb-28 pt-7 sm:px-6 lg:px-8 lg:pb-12">
         <div className="mb-6 flex flex-col gap-1.5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Image tools</p>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">GIF Maker</h1>
-          <p className="max-w-2xl text-sm text-muted-foreground">Turn a short video or a set of images into a looping GIF. Your files stay on this device.</p>
+          <div className="flex items-center gap-2.5">
+            <Link href="/" aria-label="Back to tools" className="inline-flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><ArrowLeft className="size-4" /></Link>
+            <ToolBrandMark className="h-7" />
+            <h1 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">GIF Maker</h1>
+          </div>
+          <p className="ml-10 max-w-2xl text-sm text-muted-foreground">Turn a short video or a set of images into a looping GIF. Your files stay on this device.</p>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">

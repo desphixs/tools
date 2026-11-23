@@ -28,6 +28,7 @@ import {
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ToolBrandMark } from "@/components/tool-brand-mark";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -109,7 +110,7 @@ async function decodeProject(file: File): Promise<{ composition: Composition; as
     throw new Error("This project file is not valid JSON.");
   }
   if (!isRecord(raw) || raw.kind !== "framecraft-project" || raw.version !== 1 || !validateComposition(raw.composition) || !Array.isArray(raw.assets)) {
-    throw new Error("This is not a supported Framecraft project file.");
+    throw new Error("This is not a supported Screenshot Styler project file.");
   }
   if (typeof raw.createdAt !== "string" || !Number.isFinite(Date.parse(raw.createdAt)) || raw.assets.length > 2) {
     throw new Error("This project file has invalid metadata.");
@@ -1162,9 +1163,9 @@ export function FramecraftEditor() {
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <Link href="/" onClick={guardHomeNavigation} aria-label="Back to tools" className="inline-flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"><ArrowLeft className="size-4" /></Link>
             <span className="h-5 w-px bg-border" aria-hidden="true" />
+            <ToolBrandMark />
             <div className="min-w-0">
-              <div className="flex items-center gap-2"><h1 className="truncate text-sm font-semibold">Framecraft</h1>{dirty && <span className="size-1.5 rounded-full bg-amber-500" title="Unsaved changes" aria-label="Unsaved changes" />}</div>
-              <p className="hidden text-[11px] text-muted-foreground sm:block">Screenshot composer</p>
+              <div className="flex items-center gap-2"><h1 className="truncate text-sm font-semibold">Screenshot Styler</h1>{dirty && <span className="size-1.5 rounded-full bg-amber-500" title="Unsaved changes" aria-label="Unsaved changes" />}</div>
             </div>
           </div>
           <div className="flex items-center gap-0.5 sm:gap-1">

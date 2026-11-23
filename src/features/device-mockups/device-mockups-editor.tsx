@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type DragEvent, type KeyboardEvent, type MouseEventHandler, type PointerEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { ToolBrandMark } from "@/components/tool-brand-mark";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -732,6 +733,7 @@ export function DeviceMockupsEditor() {
         <Link href="/" onClick={handleHomeNavigation} aria-label="Back to tools" className="inline-flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
           <ArrowLeft className="size-4" />
         </Link>
+        <ToolBrandMark />
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-sm font-semibold">Device Mockups</h1>
           <p className="text-xs text-muted-foreground">Place a screenshot inside a laptop or monitor scene.</p>

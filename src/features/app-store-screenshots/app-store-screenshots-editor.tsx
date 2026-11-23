@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
+import { ToolBrandMark } from "@/components/tool-brand-mark";
 import { GalleryCanvas } from "./components/gallery-canvas";
 import {
   ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Download, Eye, FileImage, FolderOpen,
@@ -548,9 +550,12 @@ export function AppStoreScreenshotsEditor() {
       <main className="mx-auto max-w-[1600px] px-4 pb-28 pt-6 sm:px-6 lg:px-8 lg:pb-10">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Image tools</p>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">App Store Screenshots</h1>
-            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Build a complete, ordered product-page gallery from your real app screens.</p>
+            <div className="flex items-center gap-2.5">
+              <Link href="/" aria-label="Back to tools" className="inline-flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"><ArrowLeft className="size-4" /></Link>
+              <ToolBrandMark className="h-7" />
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">App Store Screenshots</h1>
+            </div>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">Build a complete, ordered product-page gallery from your real app screens.</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" onClick={undo} disabled={!undoStack.current.length || !!busy} aria-label="Undo"><Undo2 data-icon="inline-start" /> Undo</Button>
