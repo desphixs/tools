@@ -99,51 +99,35 @@ export function DeviceMockupsThumbnail() {
 export function AppStoreScreenshotsThumbnail() {
   return (
     <svg viewBox="0 0 360 190" className="h-full w-full" aria-hidden="true" focusable="false">
-      <rect width="360" height="190" rx="22" fill="#f5f5f4" />
-      <g fill="#fff" stroke="#444" strokeWidth="1.35">
-        <rect x="61" y="19" width="67" height="152" rx="11" />
-        <rect x="147" y="13" width="67" height="164" rx="11" />
-        <rect x="233" y="19" width="67" height="152" rx="11" />
+      <defs>
+        <linearGradient id="app-store-wash" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#d9ccfb" />
+          <stop offset="0.52" stopColor="#f4eff7" />
+          <stop offset="1" stopColor="#f2d0c3" />
+        </linearGradient>
+        <linearGradient id="app-store-screen" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#ede7f8" />
+          <stop offset="1" stopColor="#f7eeeb" />
+        </linearGradient>
+        <filter id="app-store-phone-shadow" x="-25%" y="-15%" width="150%" height="140%">
+          <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#65576f" floodOpacity="0.13" />
+        </filter>
+      </defs>
+      <rect width="360" height="190" rx="22" fill="url(#app-store-wash)" />
+      <g filter="url(#app-store-phone-shadow)" transform="rotate(-5 96 96)">
+        <rect x="65" y="35" width="62" height="122" rx="14" fill="#fbfafc" stroke="#d8d2dd" strokeWidth="1.5" />
+        <rect x="71" y="42" width="50" height="108" rx="10" fill="url(#app-store-screen)" />
+        <circle cx="96" cy="39" r="1.4" fill="#b8b1bf" />
       </g>
-      <g fill="#555">
-        <rect x="86" y="25" width="17" height="2" rx="1" />
-        <rect x="172" y="19" width="17" height="2" rx="1" />
-        <rect x="258" y="25" width="17" height="2" rx="1" />
-        <rect x="71" y="37" width="42" height="3" rx="1.5" />
-        <rect x="157" y="31" width="42" height="3" rx="1.5" />
-        <rect x="243" y="37" width="42" height="3" rx="1.5" />
+      <g filter="url(#app-store-phone-shadow)">
+        <rect x="149" y="24" width="62" height="142" rx="14" fill="#fbfafc" stroke="#d8d2dd" strokeWidth="1.5" />
+        <rect x="155" y="31" width="50" height="128" rx="10" fill="url(#app-store-screen)" />
+        <circle cx="180" cy="28" r="1.4" fill="#b8b1bf" />
       </g>
-      <g fill="#d3d3d1">
-        <rect x="71" y="45" width="31" height="2" rx="1" />
-        <rect x="157" y="39" width="31" height="2" rx="1" />
-        <rect x="243" y="45" width="31" height="2" rx="1" />
-      </g>
-      <g>
-        <rect x="71" y="54" width="47" height="51" rx="6" fill="#e6e6e4" />
-        <rect x="157" y="48" width="47" height="64" rx="6" fill="#e1e1df" />
-        <rect x="243" y="54" width="47" height="51" rx="6" fill="#e6e6e4" />
-        <circle cx="107" cy="65" r="5" fill="#f7f7f6" />
-        <circle cx="193" cy="60" r="5" fill="#f7f7f6" />
-        <circle cx="279" cy="65" r="5" fill="#f7f7f6" />
-        <path d="M71 91c11-13 20-14 29-5 8-10 12-10 18-3v22H71Z" fill="#999" />
-        <path d="M157 98c12-16 22-17 31-6 8-12 11-12 16-5v25h-47Z" fill="#888" />
-        <path d="M243 91c11-13 20-14 29-5 8-10 12-10 18-3v22h-47Z" fill="#999" />
-      </g>
-      <g fill="#999">
-        <rect x="71" y="113" width="42" height="2" rx="1" />
-        <rect x="71" y="119" width="36" height="2" rx="1" />
-        <rect x="71" y="125" width="39" height="2" rx="1" />
-        <rect x="157" y="120" width="42" height="2" rx="1" />
-        <rect x="157" y="126" width="36" height="2" rx="1" />
-        <rect x="157" y="132" width="39" height="2" rx="1" />
-        <rect x="243" y="113" width="42" height="2" rx="1" />
-        <rect x="243" y="119" width="36" height="2" rx="1" />
-        <rect x="243" y="125" width="39" height="2" rx="1" />
-      </g>
-      <g fill="#333">
-        <rect x="71" y="138" width="47" height="11" rx="5.5" />
-        <rect x="157" y="145" width="47" height="16" rx="7" />
-        <rect x="243" y="138" width="47" height="11" rx="5.5" />
+      <g filter="url(#app-store-phone-shadow)" transform="rotate(5 264 96)">
+        <rect x="233" y="35" width="62" height="122" rx="14" fill="#fbfafc" stroke="#d8d2dd" strokeWidth="1.5" />
+        <rect x="239" y="42" width="50" height="108" rx="10" fill="url(#app-store-screen)" />
+        <circle cx="264" cy="39" r="1.4" fill="#b8b1bf" />
       </g>
     </svg>
   );
