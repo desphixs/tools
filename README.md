@@ -1,162 +1,128 @@
-# Tools
+# Tools by Desphixs
 
-A Next.js tools directory. It currently includes **Framecraft**, a product screenshot composer, **Collage Maker**, a multi-image collage editor, **Device Mockups**, **GIF Maker**, **App Store Screenshots**, and **Batch Social Asset Exporter**.
+**Tools** is a small collection of practical image and media editors that run in your browser. Use them to style a product screenshot, build a collage, make a GIF, and more.
 
-## Run locally
+Try them here: [tools.desphixs.com](https://tools.desphixs.com)
 
-Use pnpm for package management. `pnpm-lock.yaml` is the primary lockfile.
+This is an open-source project, and contributions are welcome. If you find a bug, have an idea, or want to build something with us, jump in.
 
-```bash
+## What you can make
+
+| Tool | What it does |
+| --- | --- |
+| [Screenshot Styler](https://tools.desphixs.com/tools/framecraft) | Add a background, crop, border, or shadow to product screenshots, then export a high-resolution image. |
+| [Collage Maker](https://tools.desphixs.com/tools/collage-maker) | Arrange photos in grids or custom layouts and export the finished collage. |
+| [Device Mockups](https://tools.desphixs.com/tools/device-mockups) | Place a screenshot into a laptop or monitor scene and adjust how it fits the screen. |
+| [App Store Screenshots](https://tools.desphixs.com/tools/app-store-screenshots) | Create a set of store-sized iPhone or iPad screenshots with layouts and captions. |
+| [GIF Maker](https://tools.desphixs.com/tools/gif-maker) | Turn a video clip or image sequence into an animated GIF. |
+| [Social Asset Pack](https://tools.desphixs.com/tools/social-asset-exporter) | Adapt one design to several social image sizes and download the set as a ZIP. |
+
+Here is what each editor can do:
+
+- **Screenshot Styler:** Set up a landscape, portrait, square, or custom canvas. Use a solid color, gradient, or image background, then adjust screenshot fit, crop, position, border placement, and inner or outer shadows. Save templates and projects, and export PNG or JPEG.
+- **Collage Maker:** Build grids and diagonal layouts with up to 36 image cells. Adjust each image, cell shape, spacing, border, and background, then export a PNG or JPEG. Projects can be downloaded and reopened later.
+- **Device Mockups:** Pick a laptop or monitor scene, add a screenshot, and tune its fit, zoom, and position in the screen. Preview the finished scene and export at its original size or twice the resolution. Project files keep the image and settings together.
+- **App Store Screenshots:** Arrange one to ten screens for an iPhone or iPad display size and orientation. Use a shared layout, customize text for individual screens, review size and crop warnings, and export exact-size PNG or JPEG files or an ordered ZIP.
+- **GIF Maker:** Use a local MP4 or WebM clip, or a sequence of 2 to 30 images. Trim video, reorder images, choose the output size and frame rate, and set the loop behavior. GIFs have no audio and are limited to 640 pixels on the longest side.
+- **Social Asset Pack:** Start with one master image and choose from the current Pinterest, YouTube, YouTube Shorts, and LinkedIn placement presets. Fit or crop each size, adjust its focal point, optionally add brand text, colors, or a logo, then download the pack as a ZIP. Presets are helpful starting points, not a promise of platform approval.
+
+## How it works
+
+The editors are built around a canvas. Add your files, make changes in the editor, preview the result, and export it. Most image work happens in your browser. Images and project data stay in browser storage or in files you choose to download. The app does not upload your designs for server-side image processing.
+
+Some tools save drafts in IndexedDB so you can pick up where you left off in the same browser. Browser storage is best effort and can be cleared, so download a project file when you want a portable backup. Sign-in is optional. Account and session details are stored separately from your images and project files.
+
+## Run it locally
+
+You will need Node.js and pnpm.
+
+~~~bash
+git clone <your-fork-url>
+cd tools
 pnpm install
 pnpm dev
-```
+~~~
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Scripts
+The standard local app runs with Next.js. There is also a Vinext development command for working with the Cloudflare runtime:
 
-```bash
-pnpm dev                 # Start Next.js locally (Webpack for Windows/Tailwind compatibility)
-pnpm lint                # Run ESLint
-pnpm typecheck           # Type-check the application
-pnpm build               # Create a production build
-```
+~~~bash
+pnpm dev:vinext
+~~~
 
-## Project structure
+### Optional sign-in and database setup
 
-```text
-src/
-  app/                         App Router pages and global theme tokens
-    tools/framecraft/          Framecraft route and loading state
-    tools/collage-maker/       Collage Maker route and loading state
-    tools/device-mockups/      Device Mockups route and loading state
-    tools/gif-maker/           GIF Maker route and loading state
-    tools/app-store-screenshots/ App Store Screenshots route and loading state
-    tools/social-asset-exporter/ Batch Social Asset Exporter route and loading state
-  components/                  Shared platform UI and shadcn/ui components
-  features/framecraft/          Framecraft domain and editor logic
-    components/                Canvas, background, screenshot and shared controls
-    framecraft-editor.tsx       Editor state and orchestration
-    model.ts                    Versioned composition and asset types
-    presets.ts                  Canvas sizes and background presets
-    render.ts                   Shared Canvas 2D preview and export renderer
-    storage.ts                  Typed browser persistence boundary and IndexedDB adapter
-  features/collage-maker/       Collage Maker domain, renderer, editor and storage
-    collage-editor.tsx          Responsive editor state and interactions
-    model.ts                    Versioned canvas, layout, cell and project types
-    render.ts                   Shared Canvas 2D preview and export renderer
-    storage.ts                  IndexedDB asset and recovery adapter
-  features/device-mockups/      Device Mockups catalog, renderer, editor and storage
-    device-mockups-editor.tsx   Catalog browsing, screen placement, projects and export
-    model.ts                    Versioned template, composition and project types
-    render.ts                   Perspective warp and preview/export renderer
-    storage.ts                  Browser recovery and image data adapter
-  features/gif-maker/           GIF Maker models, frame rendering, editor and encoder worker
-    gif-maker-editor.tsx        Local source editing and export orchestration
-    model.ts                    GIF settings, limits and frame sizing
-    render.ts                   Shared source-to-output frame renderer
-    encoder.ts                  Typed client-to-worker GIF encoding boundary
-    gif-encoder.worker.ts       Frame palette mapping and GIF encoding
-    media.ts                    Local video seeking and image loading
-  features/app-store-screenshots/ App Store specs, editor, renderer and local project storage
-  features/social-asset-exporter/ One-source social placement pack editor
-    catalog.ts                  Versioned placement specs and official source URLs
-    model.ts                    Pack, brand, asset and import validation types
-    render.ts                   Shared preview/export math and Canvas renderer
-    storage.ts                  Local recovery and source-image boundary
-    project-file.ts             Versioned portable project import/export
-    zip.ts                      Bounded uncompressed ZIP writer
-    social-asset-exporter-editor.tsx Responsive editor and export orchestration
-  lib/
-    tools.ts                    Typed directory registry for available tools
-docs/
-  milestone-1.md                Product scope and phased implementation plan
-  milestone-3.md                Device Mockups implementation plan
-  milestone-5.md                App Store Screenshot Studio plan and implementation notes
-public/mockups/                 Bundled mockup scenes and thumbnails
-```
+The image tools can be explored without setting up Google sign-in. To work on authentication, copy `.env.example` to `.env.local` and fill in the values for a development database and Google OAuth app:
 
-Keep new tools under their own feature folders. Put reusable platform components in `src/components` and shared tool directory metadata in `src/lib/tools.ts`. Keep route modules thin and avoid sharing tool-specific code across features.
-
-## Framecraft
-
-Framecraft uses a single typed composition model for output size, background, screenshot frame, crop and appearance. The editor supports landscape, square, portrait and custom canvases; solid, gradient and image backgrounds; image adjustments and overlays; screenshot positioning, source-ratio locking, resizing, crop, border and shadow controls; undo/redo; original and finished previews; local templates; local project files; recovery drafts; PNG and JPEG export. Clicking the screenshot, image background, or canvas edge selects its controls. Shadow width and height start matched to the screenshot and can be adjusted independently.
-
-The desktop editor uses a workspace beside its controls. On phones, the preview uses the available width and the controls move to an expandable bottom panel. The canvas can be manipulated with pointer or touch. Numeric fields and arrow keys provide alternatives for precise positioning and crop adjustments.
-
-### Images, projects and templates
-
-- Uploads accept PNG, JPEG and WebP files up to **40 MB each**. Images are limited to **16,000 pixels on either side** and **32 million pixels total**.
-- Output canvases are limited to **4,096 pixels on either side** and **16 million pixels total**.
-- Images, templates and recovery drafts are stored in browser IndexedDB. They are not uploaded by this application. Browser data may be cleared or evicted; recovery is best effort.
-- If IndexedDB is unavailable, images can remain in memory for the current session, up to **80 MB**. Download a project file to preserve work beyond the session.
-- A `.framecraft` project file contains the composition and source images. It is downloaded locally and can be reopened later. Imports are limited to **80 MB**.
-- A template saves the canvas, background and screenshot styling without the main screenshot. Templates are stored in the current browser and can be removed when browser data is cleared.
-- PNG preserves requested transparent corners. JPEG uses a white matte and offers a quality setting.
-
-## Collage Maker
-
-Collage Maker creates square, portrait, landscape, story, or custom-size compositions with up to 36 image cells. It includes equal grids, diagonal tiles, adjustable rows and columns, outer padding, cell gaps, cell shapes, independent image crop and fit, per-cell position, size, rotation, opacity and border controls, solid/gradient/image backgrounds, undo/redo, recovery drafts, portable `.collage` project files, and PNG/JPEG export. Cells can be selected and dragged directly on the canvas; their lower corner resizes them. Arrow keys move the selected cell, and numeric controls remain available for precise edits. The mobile editor keeps the canvas above a scrollable, tabbed control panel and keeps add, preview, undo, redo, and export actions in reach.
-
-Collage Maker stores images and recovery drafts in its own IndexedDB database. Project files include the composition and source images so they can be reopened on another device. Image inputs accept PNG, JPEG, and WebP, up to 40 MB each. Canvases are limited to 4,096 pixels per side and 16 megapixels total; projects are limited to 120 MB of source images. Browser storage is best effort, so download a project file to keep a portable copy.
-
-## GIF Maker
-
-GIF Maker creates an animated GIF from a local MP4 or WebM clip or an ordered sequence of 2–30 PNG, JPEG, or WebP images. Video clips can be trimmed to 10 seconds, sampled at 5–15 fps, and exported at a maximum dimension of 640 pixels. The default maximum size is 320 pixels. Image frames can be reordered with pointer or keyboard drag-and-drop. A screen-reader-accessible position selector stays hidden unless keyboard-focused. Both modes use one shared image duration and support original, square, portrait, or landscape output, fit/crop, three output sizes, and loop-once or loop-forever behavior. On desktop, settings stay in a pinned sidebar with its own scroll area; on phones, they stack below the preview. The result is previewed and downloaded as a `.gif`.
-
-Source media stays in memory on the device and is cleared when the page is left. Video input is limited to 100 MB; still images are limited to 40 MB each, 120 MB combined, 16,000 pixels per side, 32 megapixels each, and 80 megapixels across the sequence. GIF output uses a white matte, has no audio, and is limited to 256 colors per frame. Browser codec support varies, and the current encoder does not apply dithering, so video and photographic output can show color banding or flicker. These limits and quality tradeoffs are documented in [Milestone 2](docs/milestone-2.md).
-
-## Device Mockups
-
-Device Mockups places a local PNG, JPEG, or WebP screenshot into a curated laptop or monitor scene. Choose a mockup, add a screenshot, then adjust fill/fit, zoom, and horizontal or vertical position inside its screen. Use **Finished** to inspect the composition without editing guides, then download PNG or JPEG at the scene's native size or twice its resolution. A project file includes the screenshot and settings so it can be opened later.
-
-The first catalog scenes are bundled in `public/mockups/` and have screen geometry in `src/features/device-mockups/catalog.ts`. Screenshots, local recovery drafts, and projects stay in the browser or in a project file; the app does not upload them. Local recovery is best-effort, so download a project file to keep a portable copy. The catalog and draft storage each have typed boundaries; future catalog hosting or account-backed project storage can be added without changing the perspective renderer. See [Milestone 3](docs/milestone-3.md) for the implementation plan and current decisions.
-
-## App Store Screenshots
-
-App Store Screenshots creates an ordered product-page gallery from one to ten local app screenshots. Choose an iPhone or iPad display-size specification and orientation, then apply a shared full-bleed, device-frame, or caption-led layout with per-screen copy overrides. Click a headline, subtitle, or device on the canvas to select it; drag to move, resize handles and the rotation node to transform it, or use the precise inspector controls. Preview one screen or the complete set, inspect crop and resolution warnings, and export exact-size opaque PNG/JPEG files or an ordered ZIP. Phone/tablet frames are original vector drawings. Portable projects use the versioned `.appshots` format. Screenshots and recovery drafts stay in this browser; image data is not uploaded or linked to account records. See [Milestone 5](docs/milestone-5.md) for supported specifications and limits.
-
-## Batch Social Asset Exporter
-
-Batch Social Asset Exporter turns one local master image into a ZIP of selected social placements. Its initial versioned catalog supports Pinterest Standard Pin (1000 x 1500), YouTube video thumbnail (3840 x 2160), YouTube Shorts thumbnail (2160 x 3840), and LinkedIn landscape single-image ad (1200 x 628). Catalog entries link to official specifications and record a verification date. Dimensions are recommended creator specs; the tool does not claim platform acceptance. See [Milestone 6](docs/milestone-6.md) for the current sources and product decisions.
-
-Every output renders directly from the original PNG, JPEG, or WebP source. **Fit** is the default and preserves the complete image; **Crop** is explicit and has independent focal X/Y controls for each placement. Shared defaults can be overridden per size. Optional headline, caption, brand colors/typeface/logo, and a configurable safe inset form reusable brand settings in the project. The editor offers per-size and whole-pack previews, crop/source-resolution warnings, source/output dimensions, format, and estimated or actual file sizes. Upscaling must be acknowledged before export. PNG is the default; JPEG/WebP are explicit lossy choices with a quality control. A true no-op with matching dimensions and format can reuse the original bytes.
-
-Downloads use platform/placement folders and descriptive filenames. The bounded, uncompressed ZIP writer validates output count, paths, and aggregate bytes. A versioned `.socialpack` file includes the source image and settings; IndexedDB recovery is best effort. Source files stay in the browser or in user-controlled downloads. The exporter does not require an account and keeps its images and project data local. It does not upload, cloud-process, analyze, or directly post assets.
-
-## Implementation notes
-
-- **Rendering:** Framecraft and Collage Maker use the browser Canvas 2D API instead of adding Konva or Fabric. Each tool uses the same renderer for its editable preview and final output, so composition scaling, clipping and layer order have one source of truth. GIF Maker uses Canvas 2D to size and composite each frame before encoding. Workspace guides and selection handles are excluded from export. Framecraft's shadow spread is rendered by expanding a filled rounded shape because Canvas 2D does not expose a native shadow-spread setting.
-- **GIF encoding:** GIF Maker uses `gifenc` in a feature-local Web Worker. The browser decodes local video and seeks to sampled frames; the app sends one composited frame at a time to the worker, which quantizes its palette and appends it to the GIF. This keeps CPU-heavy encoding away from the UI and avoids loading a general-purpose WebAssembly transcoder. `gifenc` has no built-in dithering or worker wrapper, so those quality limits and the worker boundary are explicit.
-- **GIF image sorting:** GIF Maker uses `@dnd-kit/react` for pointer and touch drag-and-drop with keyboard sorting. A screen-reader-accessible position selector stays hidden unless keyboard-focused.
-- **Device Mockups:** The catalog stores normalized display corners for each scene. Canvas 2D renders the screenshot into display space with a projective warp and rounded screen mask; the same function produces the preview and download. Static mockups are loaded through a catalog interface, and local recovery uses a feature-owned IndexedDB adapter. Catalog items use stable IDs and versions so a later hosted catalog can resolve the same project references.
-- **Device Mockups:** The catalog stores normalized display corners for each scene. Canvas 2D renders the screenshot into display space with a projective warp and rounded screen mask; the same function produces the preview and download. Static mockups are loaded through a catalog interface, and local recovery uses a feature-owned IndexedDB adapter. Catalog items use stable IDs and versions so a later hosted catalog can resolve the same project references.
-- **Device Mockups asset source:** The initial laptop and monitor scenes were generated specifically for this application and compressed to WebP. Their source and distribution notes are in [`public/mockups/README.md`](public/mockups/README.md).
-- **Social asset ZIP:** The exporter uses a feature-owned ZIP store writer with UTF-8 paths and CRC-32 rather than adding an archive dependency. It caps packs at four outputs and 100 MB and stores the rendered files without recompression.
-- **Persistence:** Framecraft and Collage Maker use separate typed storage interfaces and IndexedDB databases. Their composition data and stable asset IDs do not depend on browser APIs, keeping each tool's domain model separate from persistence.
-- **UI:** shadcn/ui components provide common controls. Shared light and dark theme tokens live in `src/app/globals.css`; button, card, control and popover styles use those tokens. `next-themes` respects the system preference and saves an explicit theme choice.
-- **Limits:** Canvas filters, memory use and export capacity vary by browser and device. Large images and output sizes can fail on constrained devices; the editor reports input, storage and export errors while preserving the current in-memory composition.
-
-## Scope
-
-The directory and all tool routes are public; Google sign-in is optional, and the Batch Social Asset Exporter does not require an account. Better Auth stores account and session records in Neon Postgres through Drizzle. Tool images, compositions, drafts, and project files remain in the browser or in files the user downloads; they are not uploaded or synced to the account. This release does not include server-side image processing, cloud project storage, analytics, billing, or direct social posting. Browser recovery is best effort; downloaded project files are portable backups.
-
-## Google authentication and database
-
-Local configuration lives in the ignored `.env.local` file. Copy the safe names and placeholders from `.env.example` if setting up a new checkout:
-
-```text
+~~~text
 DATABASE_URL=
 BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=http://localhost:3000
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
-```
+~~~
 
-The Google OAuth client needs the local JavaScript origin `http://localhost:3000` and redirect URI `http://localhost:3000/api/auth/callback/google`. Better Auth uses the same callback path on the production origin. Do not expose the Google client secret or database URL to browser code.
+For local Google OAuth, use `http://localhost:3000` as an authorized JavaScript origin and `http://localhost:3000/api/auth/callback/google` as the redirect URI. Use a development database for local work, never production credentials. The schema commands are:
 
-The local `DATABASE_URL` must point to the development Neon project. Generate and apply schema migrations with `pnpm db:generate` and `pnpm db:migrate`. Production must use its own Neon project, database URL, and Better Auth secret stored as Cloudflare secrets. Cloudflare deployment is not part of the local setup steps.
+~~~bash
+pnpm db:generate
+pnpm db:migrate
+~~~
 
-## Search engine metadata
+Keep `.env.local`, database URLs, OAuth secrets, and other credentials out of commits.
 
-The public directory and each tool route use canonical URLs, page-specific titles and descriptions, Open Graph and Twitter metadata, and structured data. The route metadata, keywords, and feature summaries are derived from the tool entries in `src/lib/tools.ts`; keep those fields accurate when adding or changing a tool. `src/app/sitemap.ts` lists the homepage and available tools, and `src/app/robots.ts` permits public crawling while excluding API routes. The canonical production origin is configured in `src/lib/seo.ts`.
+## Project map
+
+~~~text
+src/
+  app/                         Routes, layouts, sitemap, and robots rules
+  components/                  Shared interface components and tool thumbnails
+  features/                    Tool-specific editors, models, renderers, and storage
+  lib/tools.ts                 Tool directory, card copy, and SEO details
+  lib/seo.ts                   Shared metadata and structured-data helpers
+docs/                          Tool milestones and implementation notes
+public/mockups/                Device Mockups scenes and asset notes
+~~~
+
+Each tool keeps its editor and domain logic in its own folder under `src/features`. Shared interface pieces belong in `src/components`. The tool directory and its search metadata live in `src/lib/tools.ts`. Routes should stay small and connect the tool page to its feature.
+
+The editors use browser APIs such as Canvas and IndexedDB for image rendering and local recovery. Tool projects have their own limits and file formats, so check the tool page and its milestone notes before changing those details. For example, GIF exports have no audio and use a limited color palette, and social placement sizes are useful presets rather than a guarantee that every platform will accept an upload.
+
+## Want to contribute?
+
+Glad you're here. A simple issue or pull request is great. For larger changes, open an issue first so we can talk through the idea before you spend time building it.
+
+1. Fork the repo and create a branch for your change.
+2. Keep the change focused. Tool-specific work should stay in that tool's feature folder where possible.
+3. If you add or rename a tool, update its route and entry in `src/lib/tools.ts`. Include a clear name, short description, SEO description, keywords, features, and thumbnail.
+4. Keep the UI responsive, accessible, and consistent with the existing light and dark themes. Provide keyboard or form controls for important canvas actions when possible.
+5. Run the checks that fit your change, then open a pull request with a short summary, what you tried, and screenshots or a screen recording for UI changes.
+
+Useful commands:
+
+~~~bash
+pnpm lint
+pnpm typecheck
+pnpm build
+~~~
+
+There is no separate test command configured right now. If your change adds tests or a new check, include the command contributors should run in your pull request.
+
+## Search and sharing
+
+Each public page has its own title, description, canonical URL, Open Graph and Twitter metadata, and structured data. The homepage and available tools are listed in the sitemap. Robots rules allow public pages to be crawled and keep API routes out of search results. When you add or rename a tool, keep the SEO fields in `src/lib/tools.ts` accurate so the page metadata and sitemap stay in sync.
+
+## Deploying
+
+The live site runs on Cloudflare Workers. The project has a Cloudflare deployment setup and persistent KV cache binding. Deployment is for contributors with access to the Cloudflare account and the configured secrets:
+
+~~~bash
+pnpm deploy:vinext
+~~~
+
+Do not commit deployment credentials or copy production secrets into a local environment. Ask a maintainer if you need help with access or environment setup.
+
+## License
+
+This project is released under the MIT License. You can use, change, and share the code as long as the copyright and license notice stay with it. See [LICENSE](LICENSE) for the full terms. Third-party dependencies and assets keep their own licenses.
