@@ -48,7 +48,7 @@ Before implementation, inspect the current repository state and installed Next.j
 
 - Accept multiple PNG, JPEG, or WebP images, consistent with the existing image tools.
 - Show an ordered list or thumbnail strip with each image's position visible.
-- Let users reorder frames by dragging a dedicated grip. Support keyboard sorting and provide a frame options menu with earlier/later actions as a non-drag pointer alternative.
+- Let users reorder frames by dragging a dedicated grip. Support keyboard sorting and provide a compact position selector as a non-drag pointer alternative.
 - Provide one global frame-duration control, defaulting to 100 ms, with an editable numeric value. Per-image timing and transition effects are out of scope.
 - Require at least two images to create an animation. Explain the requirement before export.
 
@@ -227,7 +227,7 @@ The Milestone 2 v1 feature is implemented. This section records what was built a
 ### Phase 0 findings and decisions
 
 - Installed `gifenc@1.0.3` under the MIT license. The npm registry metadata reported its last modification as 2022-05-03 when checked on 2026-11-23. The upstream README describes the project as a work in progress, notes there is no built-in worker API, and warns that it has no dithering support. The package was retained because it is a small pure-JavaScript encoder with no runtime dependencies, and its API and worker integration work in this repo. Re-evaluate it before expanding format or quality requirements.
-- Installed `@dnd-kit/react@0.5.3` under the MIT license for image sorting. Its sortable hook supports a dedicated handle; its default configuration includes pointer and keyboard sensors plus drag accessibility attributes and screen-reader instructions. A non-drag options menu remains available for one-position moves.
+- Installed `@dnd-kit/react@0.5.3` under the MIT license for image sorting. Its sortable hook supports a dedicated handle; its default configuration includes pointer and keyboard sensors plus drag accessibility attributes and screen-reader instructions. A compact position selector remains available as a non-drag pointer alternative.
 - The feature-local module worker using `new Worker(new URL(...), { type: "module" })` works with this repo's Next.js 16.4.6 setup and in the production build. Frames are drawn on the main thread and sent one at a time to the worker for palette mapping and encoding.
 - Browser checks used generated local H.264 MP4 and VP9 WebM clips and three PNG images. Both video containers decoded and exported in the tested browser; support for other codecs depends on the browser.
 - A 10-second, 640 x 360, 12 fps MP4 produced 120 frames. At 320 x 180 output it took about 34 seconds and produced a 1,243,897-byte GIF. At 640 x 360 it took about 60 seconds and produced a 3,262,355-byte GIF. These timings came from one desktop development-browser session and are not a cross-device performance guarantee. The default maximum output size is 320 pixels because larger exports took longer; 640 pixels remains available with progress and cancellation.
@@ -237,7 +237,7 @@ The Milestone 2 v1 feature is implemented. This section records what was built a
 ### Implemented behavior
 
 - Added the `/tools/gif-maker` route and GIF Maker directory entry.
-- Added video and image-sequence modes, local source preview, clip start/end fields and sliders, frame-rate control, ordered image thumbnails with drag-and-drop sorting and an options menu, and a shared image-duration control.
+- Added video and image-sequence modes, local source preview, clip start/end fields and sliders, frame-rate control, ordered image thumbnails with drag-and-drop sorting and a position selector, and a shared image-duration control.
 - Added Original, Square, Portrait, and Landscape output, cover/contain fit, 320/480/640 maximum-size presets, and loop-once or loop-forever output. The default maximum size is 320 pixels; the default video rate is 12 fps and the default image duration is 100 ms.
 - Added source validation and limits: video up to 100 MB and 10 seconds; images from PNG, JPEG, or WebP, 2-30 frames, up to 40 MB each and 120 MB combined; 16,000 pixels per side, 32 megapixels per image, and 80 megapixels per sequence; video frame rate 5-15 fps; output maximum dimension 640 pixels.
 - Sources and generated results remain in browser memory. The app does not upload media or save an edit. Video audio is not exported. Transparent image areas are composited on white.
@@ -246,7 +246,7 @@ The Milestone 2 v1 feature is implemented. This section records what was built a
 ### Verification performed
 
 - `pnpm typecheck` passes, and targeted ESLint on GIF Maker files, its route, and the tool registry passes. The production build compiles and finishes TypeScript, but static prerendering fails on `/` because the concurrent auth changes in `src/app/page.tsx` read uncached `searchParams` outside Suspense; the error surfaces through the root tooltip provider. The repository-wide `pnpm lint` reports three errors and four warnings in the unrelated `src/features/device-mockups/device-mockups-editor.tsx`. Neither adjacent workstream was changed as part of GIF Maker.
-- Manual browser workflow covered H.264 MP4 import/export, VP9 WebM import/export, a three-image sequence, pointer drag-and-drop at desktop and phone viewport widths, keyboard sorting with Space/ArrowUp/Space, non-drag options-menu reordering, square crop output, invalid file rejection, source clearing, cancellation, retry, download, loop-once, and loop-forever. The drag handle exposes the package's keyboard instructions and accessibility attributes.
+- Manual browser workflow covered H.264 MP4 import/export, VP9 WebM import/export, a three-image sequence, pointer drag-and-drop at desktop and phone viewport widths, keyboard sorting with Space/ArrowUp/Space, non-drag menu reordering, square crop output, invalid file rejection, source clearing, cancellation, retry, download, loop-once, and loop-forever. The compact position selector replaced the verified menu after those checks and has not been retested. The drag handle exposes the package's keyboard instructions and accessibility attributes.
 - Downloaded GIFs were inspected with `ffprobe`; the image sequence's downloaded frames were also read with Pillow to confirm green/red/blue order after reordering. The final 10-second video output was 320 x 180, 120 frames, and 10.0 seconds. The image sequence output was 160 x 160, three frames, and 0.3 seconds. The once output omitted the Netscape loop extension; the forever output included a zero repeat count.
 - Reviewed the desktop settings sidebar at 1280 x 800: its computed position is sticky, its scroll viewport is 768 px tall, and its 1,010 px contents scroll internally. Reviewed the phone layout at 390 x 844 in light and dark appearances. Phone coverage used viewport emulation, not a physical phone or mobile browser.
 

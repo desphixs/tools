@@ -3,7 +3,6 @@
 import Image from "next/image";
 import {
   Download,
-  Ellipsis,
   FileImage,
   FileVideo,
   GripVertical,
@@ -22,7 +21,6 @@ import type { DragEndEvent } from "@dnd-kit/react";
 import { AppHeader } from "@/components/app-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -111,13 +109,13 @@ function SortableImageFrameRow({
   index,
   count,
   disabled,
-  onMove,
+  onMoveTo,
 }: {
   image: ImageFrame;
   index: number;
   count: number;
   disabled: boolean;
-  onMove: (direction: -1 | 1) => void;
+  onMoveTo: (position: number) => void;
 }) {
   const { ref: setSortableRef, handleRef: setHandleRef, isDragging } = useSortable({ id: image.id, index, disabled });
 
@@ -150,30 +148,18 @@ function SortableImageFrameRow({
         >
           <GripVertical aria-hidden="true" />
         </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`Reorder options for ${image.file.name}`}
-                title="Reorder options"
-                disabled={disabled}
-              >
-                <Ellipsis aria-hidden="true" />
-              </Button>
-            }
-          />
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem disabled={disabled || index === 0} onClick={() => onMove(-1)}>
-              Move one position earlier
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled={disabled || index === count - 1} onClick={() => onMove(1)}>
-              Move one position later
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <select
+          aria-label={`Move ${image.file.name} to position`}
+          title="Move to position"
+          value={index}
+          onChange={(event) => onMoveTo(Number(event.currentTarget.value))}
+          disabled={disabled}
+          className="h-10 w-16 rounded-[var(--radius-control)] border border-input bg-background px-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {Array.from({ length: count }, (_, position) => (
+            <option key={position} value={position}>{position + 1}</option>
+          ))}
+        </select>
       </div>
     </div>
   );
@@ -352,17 +338,23 @@ export function GifMakerEditor() {
     }
   }, [clearGenerated, images, mode, releaseUrl, video]);
 
-  const moveImage = useCallback((index: number, direction: -1 | 1) => {
+  const moveImage = useCallback((index: number, target: number) => {
     const image = images[index];
-    const target = index + direction;
-    if (!image || target < 0 || target >= images.length) return;
+    if (!image || target < 0 || target >= images.length || target === index) return;
     setImages((current) => {
       if (!current[index] || !current[target]) return current;
       const next = [...current];
-      [next[index], next[target]] = [next[target], next[index]];
+      const [moved] = next.splice(index, 1);
+      if (!moved) return current;
+      next.splice(target, 0, moved);
       return next;
     });
-    setSelectedFrame((current) => current === index ? target : current === target ? index : current);
+    setSelectedFrame((current) => {
+      if (current === index) return target;
+      if (index < current && current <= target) return current - 1;
+      if (target <= current && current < index) return current + 1;
+      return current;
+    });
     clearGenerated();
     setError(null);
     setNotice(`${image.file.name} moved to position ${target + 1} of ${images.length}.`);
@@ -724,12 +716,12 @@ export function GifMakerEditor() {
                                 index={index}
                                 count={images.length}
                                 disabled={busy || preparingSources}
-                                onMove={(direction) => moveImage(index, direction)}
+                                onMoveTo={(position) => moveImage(index, position)}
                               />
                             ))}
                           </div>
                         </DragDropProvider>
-                        <p className="text-xs text-muted-foreground">Drag a frame by its grip to reorder, or use its options menu.</p>
+                        <p className="text-xs text-muted-foreground">Drag a frame by its grip, or choose a position.</p>
                         <Field label="Duration per image" hint={`${settings.frameDuration} ms`}>
                           <div className="flex items-center gap-3">
                             <input aria-label="Duration per image" type="range" min={MIN_FRAME_DURATION} max={2_000} step={50} value={settings.frameDuration} onChange={(event) => updateSettings({ frameDuration: Number(event.target.value) })} className={rangeClassName} disabled={busy} />
