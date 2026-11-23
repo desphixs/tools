@@ -154,7 +154,8 @@ function SortableImageFrameRow({
           value={index}
           onChange={(event) => onMoveTo(Number(event.currentTarget.value))}
           disabled={disabled}
-          className="sr-only focus-visible:not-sr-only focus-visible:h-10 focus-visible:w-16 focus-visible:shrink-0 focus-visible:rounded-[var(--radius-control)] focus-visible:border focus-visible:border-input focus-visible:bg-background focus-visible:px-2 focus-visible:text-sm focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          tabIndex={-1}
+          className="sr-only"
         >
           {Array.from({ length: count }, (_, position) => (
             <option key={position} value={position}>{position + 1}</option>
