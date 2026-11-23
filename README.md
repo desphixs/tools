@@ -1,6 +1,6 @@
 # Tools
 
-A Next.js tools directory. It currently includes **Framecraft**, a product screenshot composer, **Collage Maker**, a multi-image collage editor, **Device Mockups**, **GIF Maker**, and **Batch Social Asset Exporter**.
+A Next.js tools directory. It currently includes **Framecraft**, a product screenshot composer, **Collage Maker**, a multi-image collage editor, **Device Mockups**, **GIF Maker**, **App Store Screenshots**, and **Batch Social Asset Exporter**.
 
 ## Run locally
 
@@ -31,6 +31,7 @@ src/
     tools/collage-maker/       Collage Maker route and loading state
     tools/device-mockups/      Device Mockups route and loading state
     tools/gif-maker/           GIF Maker route and loading state
+    tools/app-store-screenshots/ App Store Screenshots route and loading state
     tools/social-asset-exporter/ Batch Social Asset Exporter route and loading state
   components/                  Shared platform UI and shadcn/ui components
   features/framecraft/          Framecraft domain and editor logic
@@ -57,6 +58,7 @@ src/
     encoder.ts                  Typed client-to-worker GIF encoding boundary
     gif-encoder.worker.ts       Frame palette mapping and GIF encoding
     media.ts                    Local video seeking and image loading
+  features/app-store-screenshots/ App Store specs, editor, renderer and local project storage
   features/social-asset-exporter/ One-source social placement pack editor
     catalog.ts                  Versioned placement specs and official source URLs
     model.ts                    Pack, brand, asset and import validation types
@@ -70,6 +72,7 @@ src/
 docs/
   milestone-1.md                Product scope and phased implementation plan
   milestone-3.md                Device Mockups implementation plan
+  milestone-5.md                App Store Screenshot Studio plan and implementation notes
 public/mockups/                 Bundled mockup scenes and thumbnails
 ```
 
@@ -108,6 +111,10 @@ Source media stays in memory on the device and is cleared when the page is left.
 Device Mockups places a local PNG, JPEG, or WebP screenshot into a curated laptop or monitor scene. Choose a mockup, add a screenshot, then adjust fill/fit, zoom, and horizontal or vertical position inside its screen. Use **Finished** to inspect the composition without editing guides, then download PNG or JPEG at the scene's native size or twice its resolution. A project file includes the screenshot and settings so it can be opened later.
 
 The first catalog scenes are bundled in `public/mockups/` and have screen geometry in `src/features/device-mockups/catalog.ts`. Screenshots, local recovery drafts, and projects stay in the browser or in a project file; the app does not upload them. Local recovery is best-effort, so download a project file to keep a portable copy. The catalog and draft storage each have typed boundaries; future catalog hosting or account-backed project storage can be added without changing the perspective renderer. See [Milestone 3](docs/milestone-3.md) for the implementation plan and current decisions.
+
+## App Store Screenshots
+
+App Store Screenshots creates an ordered product-page gallery from one to ten local app screenshots. Choose an iPhone or iPad display-size specification and orientation, then apply a shared full-bleed, device-frame, or caption-led layout with per-screen copy overrides. Click a headline, subtitle, or device on the canvas to select it; drag to move, resize handles and the rotation node to transform it, or use the precise inspector controls. Preview one screen or the complete set, inspect crop and resolution warnings, and export exact-size opaque PNG/JPEG files or an ordered ZIP. Phone/tablet frames are original vector drawings. Portable projects use the versioned `.appshots` format. Screenshots and recovery drafts stay in this browser; image data is not uploaded or linked to account records. See [Milestone 5](docs/milestone-5.md) for supported specifications and limits.
 
 ## Batch Social Asset Exporter
 

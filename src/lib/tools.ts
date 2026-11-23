@@ -29,6 +29,15 @@ export const tools = [
     status: "available",
   },
   {
+    id: "app-store-screenshots",
+    name: "App Store Screenshots",
+    description: "Build a consistent, store-sized screenshot gallery for iPhone and iPad.",
+    href: "/tools/app-store-screenshots",
+    category: "Image",
+    icon: Images,
+    status: "available",
+  },
+  {
     id: "gif-maker",
     name: "GIF Maker",
     description: "Create an animated GIF from a video or a sequence of images.",
