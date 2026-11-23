@@ -48,7 +48,7 @@ Before implementation, inspect the current repository state and installed Next.j
 
 - Accept multiple PNG, JPEG, or WebP images, consistent with the existing image tools.
 - Show an ordered list or thumbnail strip with each image's position visible.
-- Let users reorder frames by dragging a dedicated grip. Support keyboard sorting and provide a compact position selector as a non-drag pointer alternative.
+- Let users reorder frames by dragging a dedicated grip. Support keyboard sorting and keep a screen-reader-accessible position selector hidden from the visual layout unless keyboard-focused.
 - Provide one global frame-duration control, defaulting to 100 ms, with an editable numeric value. Per-image timing and transition effects are out of scope.
 - Require at least two images to create an animation. Explain the requirement before export.
 
@@ -227,7 +227,7 @@ The Milestone 2 v1 feature is implemented. This section records what was built a
 ### Phase 0 findings and decisions
 
 - Installed `gifenc@1.0.3` under the MIT license. The npm registry metadata reported its last modification as 2022-05-03 when checked on 2026-11-23. The upstream README describes the project as a work in progress, notes there is no built-in worker API, and warns that it has no dithering support. The package was retained because it is a small pure-JavaScript encoder with no runtime dependencies, and its API and worker integration work in this repo. Re-evaluate it before expanding format or quality requirements.
-- Installed `@dnd-kit/react@0.5.3` under the MIT license for image sorting. Its sortable hook supports a dedicated handle; its default configuration includes pointer and keyboard sensors plus drag accessibility attributes and screen-reader instructions. A compact position selector remains available as a non-drag pointer alternative.
+- Installed `@dnd-kit/react@0.5.3` under the MIT license for image sorting. Its sortable hook supports a dedicated handle; its default configuration includes pointer and keyboard sensors plus drag accessibility attributes and screen-reader instructions. A position selector remains screen-reader accessible and appears visually only when keyboard-focused.
 - The feature-local module worker using `new Worker(new URL(...), { type: "module" })` works with this repo's Next.js 16.4.6 setup and in the production build. Frames are drawn on the main thread and sent one at a time to the worker for palette mapping and encoding.
 - Browser checks used generated local H.264 MP4 and VP9 WebM clips and three PNG images. Both video containers decoded and exported in the tested browser; support for other codecs depends on the browser.
 - A 10-second, 640 x 360, 12 fps MP4 produced 120 frames. At 320 x 180 output it took about 34 seconds and produced a 1,243,897-byte GIF. At 640 x 360 it took about 60 seconds and produced a 3,262,355-byte GIF. These timings came from one desktop development-browser session and are not a cross-device performance guarantee. The default maximum output size is 320 pixels because larger exports took longer; 640 pixels remains available with progress and cancellation.
