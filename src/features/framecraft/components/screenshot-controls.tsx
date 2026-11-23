@@ -12,6 +12,7 @@ type ScreenshotControlsProps = {
   composition: Composition;
   imageSize?: { width: number; height: number };
   showSelectionOutline: boolean;
+  showResizeHandle: boolean;
   lowResolution: boolean;
   cropMode: boolean;
   transaction: ControlTransaction;
@@ -19,13 +20,14 @@ type ScreenshotControlsProps = {
   onRemove: () => void;
   onToggleCrop: () => void;
   onToggleSelectionOutline: (show: boolean) => void;
+  onToggleResizeHandle: (show: boolean) => void;
   onPatch: (patch: Partial<ScreenshotSettings>) => void;
   onToggleAspectLock: (locked: boolean) => void;
   onShadowPreset: (preset: "none" | "subtle" | "soft" | "dramatic") => void;
   onReset: () => void;
 };
 
-export function ScreenshotControls({ composition, imageSize, showSelectionOutline, lowResolution, cropMode, transaction, onUpload, onRemove, onToggleCrop, onToggleSelectionOutline, onPatch, onToggleAspectLock, onShadowPreset, onReset }: ScreenshotControlsProps) {
+export function ScreenshotControls({ composition, imageSize, showSelectionOutline, showResizeHandle, lowResolution, cropMode, transaction, onUpload, onRemove, onToggleCrop, onToggleSelectionOutline, onToggleResizeHandle, onPatch, onToggleAspectLock, onShadowPreset, onReset }: ScreenshotControlsProps) {
   const screenshot = composition.screenshot;
   const imageAspectRatio = imageSize ? imageSize.width / imageSize.height : screenshot.width / screenshot.height;
 
@@ -50,8 +52,12 @@ export function ScreenshotControls({ composition, imageSize, showSelectionOutlin
           </div>
           {lowResolution && <p className="rounded-[var(--radius-control)] bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-800 dark:text-amber-200">This image is being enlarged beyond its pixel size and may look soft when exported.</p>}
           <div className="flex items-center justify-between rounded-[var(--radius-control)] bg-muted/60 px-3 py-2.5">
-            <div><Label htmlFor="screenshot-selection-outline" className="text-xs font-medium">Selection outline</Label><p className="mt-0.5 text-[11px] text-muted-foreground">Show the dashed edge while selected</p></div>
+            <div><Label htmlFor="screenshot-selection-outline" className="text-xs font-medium">Selection outline</Label><p className="mt-0.5 text-[11px] text-muted-foreground">Dashed edge · shared across projects</p></div>
             <Switch id="screenshot-selection-outline" checked={showSelectionOutline} onCheckedChange={onToggleSelectionOutline} />
+          </div>
+          <div className="flex items-center justify-between rounded-[var(--radius-control)] bg-muted/60 px-3 py-2.5">
+            <div><Label htmlFor="screenshot-resize-handle" className="text-xs font-medium">Resize handle</Label><p className="mt-0.5 text-[11px] text-muted-foreground">Corner control · shared across projects</p></div>
+            <Switch id="screenshot-resize-handle" checked={showResizeHandle} onCheckedChange={onToggleResizeHandle} />
           </div>
           <div className="space-y-2">
             <Button type="button" variant={cropMode ? "secondary" : "outline"} size="sm" aria-pressed={cropMode} onClick={onToggleCrop}>

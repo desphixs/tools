@@ -117,7 +117,7 @@ function drawBackground(ctx: CanvasRenderingContext2D, composition: Composition,
   }
 }
 
-function drawScreenshot(ctx: CanvasRenderingContext2D, settings: ScreenshotSettings, loaded: LoadedImage | undefined, selected: boolean, selectionColor: string, showSelectionOutline: boolean) {
+function drawScreenshot(ctx: CanvasRenderingContext2D, settings: ScreenshotSettings, loaded: LoadedImage | undefined, selected: boolean, selectionColor: string, showSelectionOutline: boolean, showResizeHandle: boolean) {
   if (!settings.assetId || !loaded) return;
   const { x, y, width, height, rotation } = settings;
   const cx = x + width / 2;
@@ -224,13 +224,15 @@ function drawScreenshot(ctx: CanvasRenderingContext2D, settings: ScreenshotSetti
       ctx.stroke();
     }
     ctx.setLineDash([]);
-    ctx.fillStyle = "#ffffff";
-    ctx.strokeStyle = selectionColor;
-    ctx.lineWidth = Math.max(2, width / 300);
-    ctx.beginPath();
-    ctx.arc(width / 2, height / 2, Math.max(7, width / 70), 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
+    if (showResizeHandle) {
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = selectionColor;
+      ctx.lineWidth = Math.max(2, width / 300);
+      ctx.beginPath();
+      ctx.arc(width / 2, height / 2, Math.max(7, width / 70), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
     ctx.restore();
   }
 }
@@ -245,7 +247,8 @@ export function renderComposition(
   showGuides = false,
   selectionColor = "#7047eb",
   outputScale = 1,
-  showSelectionOutline = true,
+  showSelectionOutline = false,
+  showResizeHandle = false,
 ) {
   const { width, height, radius, transparentCorners } = composition.canvas;
   const outputWidth = Math.round(width * outputScale);
@@ -301,7 +304,7 @@ export function renderComposition(
       }
       ctx.restore();
     }
-    drawScreenshot(ctx, composition.screenshot, composition.screenshot.assetId ? images.get(composition.screenshot.assetId) : undefined, selected, selectionColor, showSelectionOutline);
+    drawScreenshot(ctx, composition.screenshot, composition.screenshot.assetId ? images.get(composition.screenshot.assetId) : undefined, selected, selectionColor, showSelectionOutline, showResizeHandle);
   }
   ctx.restore();
 

@@ -63,6 +63,8 @@ import { CanvasControls } from "./components/canvas-controls";
 import { ScreenshotControls } from "./components/screenshot-controls";
 import { canvasPresets, type CanvasPreset } from "./presets";
 
+const FRAMECRAFT_UI_PREFERENCES_KEY = "framecraft:ui-preferences:v1";
+
 type ImageLayer = "background" | "screenshot";
 type ActiveLayer = ImageLayer | "canvas";
 type ActivePanel = ActiveLayer;
@@ -201,7 +203,9 @@ export function FramecraftEditor() {
   const [compare, setCompare] = useState(false);
   const [preview, setPreview] = useState(false);
   const [showGuides, setShowGuides] = useState(true);
-  const [showScreenshotOutline, setShowScreenshotOutline] = useState(true);
+  const [showScreenshotOutline, setShowScreenshotOutline] = useState(false);
+  const [showResizeHandle, setShowResizeHandle] = useState(false);
+  const [uiPreferencesReady, setUiPreferencesReady] = useState(false);
   const [workspaceZoom, setWorkspaceZoom] = useState(100);
   const [workspacePan, setWorkspacePan] = useState({ x: 0, y: 0 });
   const [isWorkspacePanning, setIsWorkspacePanning] = useState(false);
@@ -229,6 +233,34 @@ export function FramecraftEditor() {
   const [historyAvailability, setHistoryAvailability] = useState({ canUndo: false, canRedo: false });
   const canExport2x = composition.canvas.width * composition.canvas.height * 4 <= MAX_CANVAS_PIXELS;
   const selectedExportScale: 1 | 2 = exportScale === 2 && canExport2x ? 2 : 1;
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(FRAMECRAFT_UI_PREFERENCES_KEY);
+      if (stored) {
+        const preferences: unknown = JSON.parse(stored);
+        if (isRecord(preferences)) {
+          setShowScreenshotOutline(preferences.showScreenshotOutline === true);
+          setShowResizeHandle(preferences.showResizeHandle === true);
+        }
+      }
+    } catch {
+      // Keep the defaults when browser storage is unavailable.
+    }
+    setUiPreferencesReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!uiPreferencesReady) return;
+    try {
+      window.localStorage.setItem(FRAMECRAFT_UI_PREFERENCES_KEY, JSON.stringify({
+        showScreenshotOutline,
+        showResizeHandle,
+      }));
+    } catch {
+      // The editor remains usable when browser storage is unavailable.
+    }
+  }, [showResizeHandle, showScreenshotOutline, uiPreferencesReady]);
 
   const refreshHistoryAvailability = useCallback(() => {
     setHistoryAvailability({ canUndo: pastRef.current.length > 0, canRedo: futureRef.current.length > 0 });
@@ -357,12 +389,12 @@ export function FramecraftEditor() {
     let errorTimer: number | undefined;
     try {
       const selectionColor = getComputedStyle(document.documentElement).getPropertyValue("--canvas-selection").trim() || "#7047eb";
-      renderComposition(canvas, composition, images, !preview && !compare && activeLayer === "screenshot", compare, undefined, showGuides, selectionColor, 1, showScreenshotOutline);
+      renderComposition(canvas, composition, images, !preview && !compare && activeLayer === "screenshot", compare, undefined, showGuides, selectionColor, 1, showScreenshotOutline, showResizeHandle);
     } catch {
       errorTimer = window.setTimeout(() => setError("The preview could not be rendered. Try reducing the canvas size or reloading the image."), 0);
     }
     return () => { if (errorTimer !== undefined) window.clearTimeout(errorTimer); };
-  }, [composition, images, activeLayer, compare, preview, showGuides, showScreenshotOutline]);
+  }, [composition, images, activeLayer, compare, preview, showGuides, showScreenshotOutline, showResizeHandle]);
 
   useEffect(() => {
     const workspace = workspaceRef.current;
@@ -1021,6 +1053,7 @@ export function FramecraftEditor() {
       composition={composition}
       imageSize={sourceImage ? { width: sourceImage.width, height: sourceImage.height } : undefined}
       showSelectionOutline={showScreenshotOutline}
+      showResizeHandle={showResizeHandle}
       lowResolution={lowResolution}
       cropMode={cropMode}
       transaction={actionControlProps}
@@ -1028,6 +1061,7 @@ export function FramecraftEditor() {
       onRemove={() => { setCropMode(false); oneEdit((current) => ({ ...current, screenshot: { ...current.screenshot, assetId: null } })); }}
       onToggleCrop={() => setCropMode((enabled) => !enabled)}
       onToggleSelectionOutline={setShowScreenshotOutline}
+      onToggleResizeHandle={setShowResizeHandle}
       onPatch={patchScreenshot}
       onToggleAspectLock={toggleScreenshotAspectLock}
       onShadowPreset={updateShadowPreset}
