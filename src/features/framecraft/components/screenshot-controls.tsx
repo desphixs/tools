@@ -105,6 +105,25 @@ export function ScreenshotControls({ composition, imageSize, lowResolution, crop
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+          <div className="flex items-center justify-between rounded-[var(--radius-control)] bg-muted/60 px-3 py-2.5">
+            <div><Label htmlFor="inner-shadow-enabled" className="text-xs font-medium">Inner shadow</Label><p className="mt-0.5 text-[11px] text-muted-foreground">Add depth inside the screenshot edge</p></div>
+            <Switch id="inner-shadow-enabled" checked={screenshot.innerShadowEnabled ?? false} onCheckedChange={(innerShadowEnabled) => { transaction.onStart(); onPatch({ innerShadowEnabled }); transaction.onEnd(); }} />
+          </div>
+          <Accordion>
+            <AccordionItem value="inner-shadow-settings">
+              <AccordionTrigger className="text-xs">Inner shadow settings</AccordionTrigger>
+              <AccordionContent className="space-y-4 pt-3">
+                <ColorControl id="inner-shadow-color" label="Color" value={screenshot.innerShadowColor ?? "#000000"} onChange={(innerShadowColor) => onPatch({ innerShadowColor, innerShadowEnabled: true })} {...transaction} />
+                <RangeControl id="inner-shadow-opacity" label="Opacity" value={screenshot.innerShadowOpacity ?? 24} min={0} max={100} format={(number) => `${Math.round(number)}%`} onChange={(innerShadowOpacity) => onPatch({ innerShadowOpacity, innerShadowEnabled: true })} {...transaction} />
+                <RangeControl id="inner-shadow-blur" label="Blur" value={screenshot.innerShadowBlur ?? 24} min={0} max={100} format={(number) => `${Math.round(number)} px`} onChange={(innerShadowBlur) => onPatch({ innerShadowBlur, innerShadowEnabled: true })} {...transaction} />
+                <FieldGrid>
+                  <RangeControl id="inner-shadow-x" label="Position X" value={screenshot.innerShadowX ?? 0} min={-80} max={80} format={(number) => `${Math.round(number)} px`} onChange={(innerShadowX) => onPatch({ innerShadowX, innerShadowEnabled: true })} {...transaction} />
+                  <RangeControl id="inner-shadow-y" label="Position Y" value={screenshot.innerShadowY ?? 0} min={-80} max={80} format={(number) => `${Math.round(number)} px`} onChange={(innerShadowY) => onPatch({ innerShadowY, innerShadowEnabled: true })} {...transaction} />
+                </FieldGrid>
+                <RangeControl id="inner-shadow-spread" label="Spread" value={screenshot.innerShadowSpread ?? 0} min={0} max={24} format={(number) => `${Math.round(number)} px`} onChange={(innerShadowSpread) => onPatch({ innerShadowSpread, innerShadowEnabled: true })} {...transaction} />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
           <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={onReset}><RotateCcw /> Reset screenshot style</Button>
         </>
       )}

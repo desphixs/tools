@@ -69,6 +69,13 @@ export type ScreenshotSettings = {
   shadowWidth: number;
   shadowHeight: number;
   shadowSpread: number;
+  innerShadowEnabled: boolean;
+  innerShadowColor: string;
+  innerShadowOpacity: number;
+  innerShadowBlur: number;
+  innerShadowX: number;
+  innerShadowY: number;
+  innerShadowSpread: number;
 };
 
 export type Composition = {
@@ -169,6 +176,13 @@ export function createDefaultComposition(): Composition {
       shadowWidth: 870,
       shadowHeight: 425,
       shadowSpread: 0,
+      innerShadowEnabled: false,
+      innerShadowColor: "#000000",
+      innerShadowOpacity: 24,
+      innerShadowBlur: 24,
+      innerShadowX: 0,
+      innerShadowY: 0,
+      innerShadowSpread: 0,
     },
   };
 }
@@ -215,7 +229,14 @@ export function validateComposition(value: unknown): value is Composition {
     finiteBetween(screenshot.shadowX, -2000, 2000) && finiteBetween(screenshot.shadowY, -2000, 2000) &&
     finiteBetween(screenshot.shadowWidth ?? screenshot.width, 60, MAX_CANVAS_DIMENSION * 2) &&
     finiteBetween(screenshot.shadowHeight ?? screenshot.height, 60, MAX_CANVAS_DIMENSION * 2) &&
-    finiteBetween(screenshot.shadowSpread, 0, 100)
+    finiteBetween(screenshot.shadowSpread, 0, 100) &&
+    (screenshot.innerShadowEnabled === undefined || typeof screenshot.innerShadowEnabled === "boolean") &&
+    (screenshot.innerShadowColor === undefined || validColor(screenshot.innerShadowColor)) &&
+    (screenshot.innerShadowOpacity === undefined || finiteBetween(screenshot.innerShadowOpacity, 0, 100)) &&
+    (screenshot.innerShadowBlur === undefined || finiteBetween(screenshot.innerShadowBlur, 0, 200)) &&
+    (screenshot.innerShadowX === undefined || finiteBetween(screenshot.innerShadowX, -2000, 2000)) &&
+    (screenshot.innerShadowY === undefined || finiteBetween(screenshot.innerShadowY, -2000, 2000)) &&
+    (screenshot.innerShadowSpread === undefined || finiteBetween(screenshot.innerShadowSpread, 0, 100))
   );
 }
 
@@ -227,6 +248,13 @@ export function normalizeComposition(composition: Composition): Composition {
       shadowWidth: composition.screenshot.shadowWidth ?? composition.screenshot.width,
       shadowHeight: composition.screenshot.shadowHeight ?? composition.screenshot.height,
       borderPosition: composition.screenshot.borderPosition ?? "inside",
+      innerShadowEnabled: composition.screenshot.innerShadowEnabled ?? false,
+      innerShadowColor: composition.screenshot.innerShadowColor ?? "#000000",
+      innerShadowOpacity: composition.screenshot.innerShadowOpacity ?? 24,
+      innerShadowBlur: composition.screenshot.innerShadowBlur ?? 24,
+      innerShadowX: composition.screenshot.innerShadowX ?? 0,
+      innerShadowY: composition.screenshot.innerShadowY ?? 0,
+      innerShadowSpread: composition.screenshot.innerShadowSpread ?? 0,
     },
   };
 }

@@ -182,6 +182,7 @@ export function FramecraftEditor() {
   const [composition, setComposition] = useState(createDefaultComposition);
   const compositionRef = useRef(composition);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const workspaceRef = useRef<HTMLElement>(null);
   const dragRef = useRef<DragState | null>(null);
   const transactionRef = useRef(false);
   const pastRef = useRef<Composition[]>([]);
@@ -357,6 +358,18 @@ export function FramecraftEditor() {
     }
     return () => { if (errorTimer !== undefined) window.clearTimeout(errorTimer); };
   }, [composition, images, activeLayer, compare, preview, showGuides]);
+
+  useEffect(() => {
+    const workspace = workspaceRef.current;
+    if (!workspace) return;
+    const handleWheel = (event: WheelEvent) => {
+      if (!event.ctrlKey || event.deltaY === 0) return;
+      event.preventDefault();
+      setWorkspaceZoom((zoom) => Math.min(150, Math.max(50, zoom - event.deltaY * 0.1)));
+    };
+    workspace.addEventListener("wheel", handleWheel, { passive: false });
+    return () => workspace.removeEventListener("wheel", handleWheel);
+  }, []);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -1080,7 +1093,7 @@ export function FramecraftEditor() {
         )}
 
         <main className="flex min-h-0 flex-1 flex-col md:flex-row">
-      <section className="relative flex min-h-[280px] flex-1 flex-col bg-workspace sm:min-h-[330px] md:min-w-0" aria-label="Composition workspace">
+      <section ref={workspaceRef} className="relative flex min-h-[280px] flex-1 flex-col bg-workspace sm:min-h-[330px] md:min-w-0" aria-label="Composition workspace">
             <div className="flex h-11 shrink-0 items-center justify-between px-3 sm:px-5">
               <div className="flex items-center gap-1">
               <Button variant={!preview ? "secondary" : "ghost"} size="sm" className="h-7 text-xs" onClick={() => { setCompare(false); setPreview(false); }}>Edit</Button>
@@ -1090,7 +1103,7 @@ export function FramecraftEditor() {
               </div>
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <Button size="icon-xs" variant="ghost" className="max-[360px]:hidden" aria-label="Zoom out" disabled={workspaceZoom <= 50} onClick={() => setWorkspaceZoom((zoom) => Math.max(50, zoom - 10))}><ZoomOut /></Button>
-                <button type="button" onClick={() => setWorkspaceZoom(100)} className="min-w-9 rounded px-1 py-1 tabular-nums hover:bg-muted" aria-label="Fit canvas to workspace">{workspaceZoom}%</button>
+                <button type="button" onClick={() => setWorkspaceZoom(100)} className="min-w-9 rounded px-1 py-1 tabular-nums hover:bg-muted" aria-label="Fit canvas to workspace">{Math.round(workspaceZoom)}%</button>
                 <Button size="icon-xs" variant="ghost" className="max-[360px]:hidden" aria-label="Zoom in" disabled={workspaceZoom >= 150} onClick={() => setWorkspaceZoom((zoom) => Math.min(150, zoom + 10))}><ZoomIn /></Button>
                 <span className="ml-1 hidden sm:inline">{composition.canvas.width} × {composition.canvas.height}</span>
                 <span className="hidden lg:inline">PNG · JPEG</span>

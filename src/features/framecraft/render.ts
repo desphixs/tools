@@ -170,6 +170,25 @@ function drawScreenshot(ctx: CanvasRenderingContext2D, settings: ScreenshotSetti
     (settings.cropY / 100) * height,
   );
   ctx.drawImage(loaded.image, rect.x, rect.y, rect.width, rect.height);
+  if (settings.innerShadowEnabled && settings.innerShadowOpacity > 0) {
+    const spread = Math.min(settings.innerShadowSpread, Math.max(0, Math.min(width, height) / 2 - 1));
+    const innerWidth = Math.max(1, width - spread * 2);
+    const innerHeight = Math.max(1, height - spread * 2);
+    const shadowPadding = settings.innerShadowBlur * 3 + Math.abs(settings.innerShadowX) + Math.abs(settings.innerShadowY) + spread + 1;
+    ctx.save();
+    ctx.globalCompositeOperation = "source-atop";
+    ctx.globalAlpha = settings.innerShadowOpacity / 100;
+    ctx.shadowColor = settings.innerShadowColor;
+    ctx.shadowBlur = settings.innerShadowBlur;
+    ctx.shadowOffsetX = settings.innerShadowX;
+    ctx.shadowOffsetY = settings.innerShadowY;
+    ctx.fillStyle = settings.innerShadowColor;
+    ctx.beginPath();
+    ctx.rect(-width / 2 - shadowPadding, -height / 2 - shadowPadding, width + shadowPadding * 2, height + shadowPadding * 2);
+    ctx.roundRect(-innerWidth / 2, -innerHeight / 2, innerWidth, innerHeight, Math.max(0, settings.cornerRadius - spread));
+    ctx.fill("evenodd");
+    ctx.restore();
+  }
   ctx.restore();
 
   if (settings.borderWidth > 0 && settings.borderOpacity > 0) {
