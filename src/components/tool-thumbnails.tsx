@@ -74,18 +74,24 @@ export function CollageThumbnail() {
 export function DeviceMockupsThumbnail() {
   return (
     <svg viewBox="0 0 360 190" className="h-full w-full" aria-hidden="true" focusable="false">
-      <rect width="360" height="190" rx="22" fill="#f5f5f4" />
-      <rect x="82" y="18" width="196" height="128" rx="11" fill="#fff" stroke="#252525" strokeWidth="2.5" />
-      <rect x="91" y="27" width="178" height="110" rx="6" fill="#f6f6f5" />
-      <path d="M105 42h48M105 49h31" stroke="#555" strokeWidth="2" strokeLinecap="round" />
-      <rect x="105" y="58" width="150" height="50" rx="6" fill="#e3e3e1" />
-      <circle cx="229" cy="72" r="8" fill="#fafaf9" />
-      <path d="M105 91c20-18 36-19 52-4 19-21 39-20 56-4 13-10 27-9 42 1v24H105Z" fill="#999" />
-      <path d="M105 100c18-9 32-7 47 2 17-9 33-7 49 3 16-7 34-5 54 2v1H105Z" fill="#777" />
-      <path d="M105 117h57M105 123h37" stroke="#999" strokeWidth="2" strokeLinecap="round" />
-      <circle cx="180" cy="22" r="1.5" fill="#777" />
-      <path d="M83 148c5-4 11-6 18-6h158c7 0 13 2 18 6l14 13c2 2 1 4-2 4H71c-3 0-4-2-2-4Z" fill="#dededc" stroke="#252525" strokeWidth="1.75" strokeLinejoin="round" />
-      <path d="M153 145h54l7 7h-68Z" fill="#bcbcb9" />
+      <defs>
+        <linearGradient id="device-mockup-wash" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#d9ccfb" />
+          <stop offset="0.52" stopColor="#f4eff7" />
+          <stop offset="1" stopColor="#f2d0c3" />
+        </linearGradient>
+        <linearGradient id="device-mockup-screen" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#eee8fa" />
+          <stop offset="1" stopColor="#f8efec" />
+        </linearGradient>
+      </defs>
+      <rect width="360" height="190" rx="22" fill="url(#device-mockup-wash)" />
+      <ellipse cx="180" cy="165" rx="96" ry="5" fill="#766d7c" opacity="0.1" />
+      <rect x="102" y="24" width="156" height="116" rx="11" fill="#fbfafc" stroke="#817a88" strokeWidth="2" />
+      <rect x="110" y="32" width="140" height="100" rx="5" fill="url(#device-mockup-screen)" />
+      <circle cx="180" cy="28" r="1.5" fill="#b6b0bd" />
+      <path d="M96 142h168l19 18c2 2 0 4-4 4H81c-4 0-6-2-4-4Z" fill="#fbfafc" stroke="#d1cbd7" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M158 144h44l7 7h-58Z" fill="#e8e3ec" />
     </svg>
   );
 }
