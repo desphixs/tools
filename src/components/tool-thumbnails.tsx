@@ -136,35 +136,27 @@ export function AppStoreScreenshotsThumbnail() {
 export function SocialAssetExporterThumbnail() {
   return (
     <svg viewBox="0 0 360 190" className="h-full w-full" aria-hidden="true" focusable="false">
-      <rect width="360" height="190" rx="22" fill="#f5f5f4" />
-      <rect x="27" y="25" width="126" height="140" rx="10" fill="#fff" stroke="#444" strokeWidth="1.35" />
-      <rect x="38" y="36" width="104" height="72" rx="7" fill="#e3e3e1" />
-      <circle cx="125" cy="48" r="6" fill="#f8f8f7" />
-      <path d="M38 91c16-17 31-17 44-5 14-16 29-16 43-4 5-4 10-5 17-2v28H38Z" fill="#999" />
-      <path d="M38 98c16-8 30-7 42 1 15-9 29-8 42 1 7-4 13-4 20 0v8H38Z" fill="#777" />
-      <rect x="38" y="118" width="62" height="4" rx="2" fill="#444" />
-      <rect x="38" y="128" width="84" height="2.5" rx="1.25" fill="#aaa" />
-      <rect x="38" y="135" width="71" height="2.5" rx="1.25" fill="#aaa" />
-      <path d="M158 94h27c17 0 15-45 35-45m-62 45h28c17 0 15 38 35 38m-63-38h96" fill="none" stroke="#9a9a98" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="187" cy="94" r="3" fill="#777" />
-      <rect x="220" y="24" width="114" height="51" rx="8" fill="#fff" stroke="#444" strokeWidth="1.25" />
-      <rect x="228" y="32" width="42" height="35" rx="5" fill="#e3e3e1" />
-      <path d="M228 58c11-12 20-13 28-5 5-8 9-9 14-4v18h-42Z" fill="#999" />
-      <rect x="277" y="34" width="47" height="3" rx="1.5" fill="#555" />
-      <rect x="277" y="42" width="40" height="2" rx="1" fill="#aaa" />
-      <rect x="277" y="48" width="44" height="2" rx="1" fill="#aaa" />
-      <rect x="220" y="90" width="54" height="75" rx="8" fill="#fff" stroke="#444" strokeWidth="1.25" />
-      <rect x="227" y="97" width="40" height="34" rx="5" fill="#e3e3e1" />
-      <path d="M227 122c10-13 19-14 27-5 5-8 8-9 13-4v18h-40Z" fill="#999" />
-      <rect x="227" y="138" width="36" height="3" rx="1.5" fill="#555" />
-      <rect x="227" y="145" width="30" height="2" rx="1" fill="#aaa" />
-      <rect x="227" y="151" width="33" height="2" rx="1" fill="#aaa" />
-      <rect x="284" y="101" width="50" height="40" rx="8" fill="#fff" stroke="#444" strokeWidth="1.25" />
-      <rect x="291" y="108" width="21" height="25" rx="4" fill="#e3e3e1" />
-      <path d="M291 126c6-9 12-10 17-3 2-5 4-6 5-4v14h-22Z" fill="#999" />
-      <rect x="316" y="109" width="11" height="2" rx="1" fill="#666" />
-      <rect x="316" y="115" width="11" height="2" rx="1" fill="#aaa" />
-      <rect x="316" y="121" width="9" height="2" rx="1" fill="#aaa" />
+      <defs>
+        <linearGradient id="social-pack-wash" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#d9ccfb" />
+          <stop offset="0.52" stopColor="#f4eff7" />
+          <stop offset="1" stopColor="#f2d0c3" />
+        </linearGradient>
+        <linearGradient id="social-pack-art" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#e5def5" />
+          <stop offset="1" stopColor="#f4e9e9" />
+        </linearGradient>
+      </defs>
+      <rect width="360" height="190" rx="22" fill="url(#social-pack-wash)" />
+      <rect x="28" y="43" width="104" height="104" rx="16" fill="#fff" opacity="0.9" />
+      <rect x="36" y="51" width="88" height="88" rx="10" fill="url(#social-pack-art)" />
+      <path d="M145 95h34m-7-6 7 6-7 6" fill="none" stroke="#a79bb9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="194" y="49" width="45" height="92" rx="11" fill="#fff" opacity="0.9" />
+      <rect x="200" y="55" width="33" height="80" rx="7" fill="url(#social-pack-art)" />
+      <rect x="251" y="66" width="57" height="57" rx="11" fill="#fff" opacity="0.9" />
+      <rect x="257" y="72" width="45" height="45" rx="7" fill="url(#social-pack-art)" />
+      <rect x="320" y="80" width="32" height="29" rx="8" fill="#fff" opacity="0.9" />
+      <rect x="325" y="85" width="22" height="19" rx="5" fill="url(#social-pack-art)" />
     </svg>
   );
 }
@@ -172,25 +164,27 @@ export function SocialAssetExporterThumbnail() {
 export function GifMakerThumbnail() {
   return (
     <svg viewBox="0 0 360 190" className="h-full w-full" aria-hidden="true" focusable="false">
-      <rect width="360" height="190" rx="22" fill="#f5f5f4" />
-      <rect x="29" y="16" width="302" height="158" rx="11" fill="#fff" stroke="#e3e3e1" />
-      <rect x="42" y="28" width="276" height="100" rx="8" fill="#2a2a2a" />
-      <g fill="#dededc">
-        <rect x="51" y="37" width="78" height="82" rx="6" />
-        <rect x="137" y="37" width="78" height="82" rx="6" />
-        <rect x="223" y="37" width="86" height="82" rx="6" />
-      </g>
-      <g fill="#999">
-        <path d="M51 104c14-20 27-21 40-5 12-16 22-17 38-5v25H51Z" />
-        <path d="M137 102c16-20 29-20 42-4 12-16 22-17 36-5v26h-78Z" />
-        <path d="M223 104c14-20 27-21 40-5 14-18 28-15 46 2v17h-86Z" />
-      </g>
-      <circle cx="181" cy="78" r="18" fill="#fff" />
-      <path d="M177 69v18l15-9Z" fill="#333" />
-      <path d="M45 145h270" stroke="#c9c9c7" strokeWidth="2" strokeLinecap="round" />
-      <path d="M45 145h126" stroke="#555" strokeWidth="2" strokeLinecap="round" />
-      <path d="M84 140v10m50-10v10m50-10v10m50-10v10m50-10v10" stroke="#aaa" strokeWidth="1" strokeLinecap="round" />
-      <circle cx="171" cy="145" r="3.5" fill="#333" />
+      <defs>
+        <linearGradient id="gif-maker-wash" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#d9ccfb" />
+          <stop offset="0.52" stopColor="#f4eff7" />
+          <stop offset="1" stopColor="#f2d0c3" />
+        </linearGradient>
+        <linearGradient id="gif-maker-frame" x1="0" y1="0" x2="1" y2="1">
+          <stop stopColor="#e7e0f6" />
+          <stop offset="1" stopColor="#f5e9e7" />
+        </linearGradient>
+        <filter id="gif-maker-shadow" x="-20%" y="-20%" width="140%" height="150%">
+          <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#65576f" floodOpacity="0.12" />
+        </filter>
+      </defs>
+      <rect width="360" height="190" rx="22" fill="url(#gif-maker-wash)" />
+      <rect x="54" y="30" width="252" height="130" rx="18" fill="#fff" opacity="0.9" filter="url(#gif-maker-shadow)" />
+      <rect x="67" y="43" width="70" height="104" rx="11" fill="url(#gif-maker-frame)" />
+      <rect x="145" y="43" width="70" height="104" rx="11" fill="#ded5f2" />
+      <rect x="223" y="43" width="70" height="104" rx="11" fill="#f0e9f7" />
+      <circle cx="180" cy="95" r="19" fill="#fff" opacity="0.96" />
+      <path d="M177 86v18l14-9Z" fill="#907cba" />
     </svg>
   );
 }
