@@ -1,6 +1,6 @@
 # Tools
 
-A Next.js tools directory. It currently includes **Framecraft**, a product screenshot composer, **Collage Maker**, a multi-image collage editor, **Device Mockups**, and **GIF Maker**.
+A Next.js tools directory. It currently includes **Framecraft**, a product screenshot composer, **Collage Maker**, a multi-image collage editor, **Device Mockups**, **GIF Maker**, and **Batch Social Asset Exporter**.
 
 ## Run locally
 
@@ -31,6 +31,7 @@ src/
     tools/collage-maker/       Collage Maker route and loading state
     tools/device-mockups/      Device Mockups route and loading state
     tools/gif-maker/           GIF Maker route and loading state
+    tools/social-asset-exporter/ Batch Social Asset Exporter route and loading state
   components/                  Shared platform UI and shadcn/ui components
   features/framecraft/          Framecraft domain and editor logic
     components/                Canvas, background, screenshot and shared controls
@@ -56,6 +57,14 @@ src/
     encoder.ts                  Typed client-to-worker GIF encoding boundary
     gif-encoder.worker.ts       Frame palette mapping and GIF encoding
     media.ts                    Local video seeking and image loading
+  features/social-asset-exporter/ One-source social placement pack editor
+    catalog.ts                  Versioned placement specs and official source URLs
+    model.ts                    Pack, brand, asset and import validation types
+    render.ts                   Shared preview/export math and Canvas renderer
+    storage.ts                  Local recovery and source-image boundary
+    project-file.ts             Versioned portable project import/export
+    zip.ts                      Bounded uncompressed ZIP writer
+    social-asset-exporter-editor.tsx Responsive editor and export orchestration
   lib/
     tools.ts                    Typed directory registry for available tools
 docs/
@@ -100,6 +109,14 @@ Device Mockups places a local PNG, JPEG, or WebP screenshot into a curated lapto
 
 The first catalog scenes are bundled in `public/mockups/` and have screen geometry in `src/features/device-mockups/catalog.ts`. Screenshots, local recovery drafts, and projects stay in the browser or in a project file; the app does not upload them. Local recovery is best-effort, so download a project file to keep a portable copy. The catalog and draft storage each have typed boundaries; future catalog hosting or account-backed project storage can be added without changing the perspective renderer. See [Milestone 3](docs/milestone-3.md) for the implementation plan and current decisions.
 
+## Batch Social Asset Exporter
+
+Batch Social Asset Exporter turns one local master image into a ZIP of selected social placements. Its initial versioned catalog supports Pinterest Standard Pin (1000 × 1500), YouTube video thumbnail (3840 × 2160), YouTube Shorts thumbnail (2160 × 3840), and LinkedIn landscape single-image ad (1200 × 628). Catalog entries link to official specifications and record a verification date. Dimensions are recommended creator specs; the tool does not claim platform acceptance. See [Milestone 6](docs/milestone-6.md) for the current sources and product decisions.
+
+Every output renders directly from the original PNG, JPEG, or WebP source. **Fit** is the default and preserves the complete image; **Crop** is explicit and has independent focal X/Y controls for each placement. Shared defaults can be overridden per size. Optional headline, caption, brand colors/typeface/logo, and a configurable safe inset form reusable brand settings in the project. The editor offers per-size and whole-pack previews, crop/source-resolution warnings, source/output dimensions, format, and estimated or actual file sizes. Upscaling must be acknowledged before export. PNG is the default; JPEG/WebP are explicit lossy choices with a quality control. A true no-op with matching dimensions and format can reuse the original bytes.
+
+Downloads use platform/placement folders and descriptive filenames. The bounded, uncompressed ZIP writer validates output count, paths, and aggregate bytes. A versioned `.socialpack` file includes the source image and settings; IndexedDB recovery is best effort. Source files stay in the browser or in user-controlled downloads. The app has no account, upload, cloud processing, analytics, or social posting.
+
 ## Implementation notes
 
 - **Rendering:** Framecraft and Collage Maker use the browser Canvas 2D API instead of adding Konva or Fabric. Each tool uses the same renderer for its editable preview and final output, so composition scaling, clipping and layer order have one source of truth. GIF Maker uses Canvas 2D to size and composite each frame before encoding. Workspace guides and selection handles are excluded from export. Framecraft's shadow spread is rendered by expanding a filled rounded shape because Canvas 2D does not expose a native shadow-spread setting.
@@ -107,10 +124,11 @@ The first catalog scenes are bundled in `public/mockups/` and have screen geomet
 - **GIF image sorting:** GIF Maker uses `@dnd-kit/react` for pointer and touch drag-and-drop with keyboard sorting. The position selector remains available to screen readers but stays visually hidden.
 - **Persistence:** Framecraft and Collage Maker use separate typed storage interfaces and IndexedDB databases. Their composition data and stable asset IDs do not depend on browser APIs, keeping each tool's domain model separate from persistence.
 - **Device Mockups:** The catalog stores normalized display corners for each scene. Canvas 2D renders the screenshot into display space with a projective warp and rounded screen mask; the same function produces the preview and download. Static mockups are loaded through a catalog interface, and local recovery uses a feature-owned IndexedDB adapter. Catalog items use stable IDs and versions so a later hosted catalog can resolve the same project references.
+- **Social asset ZIP:** The exporter uses a feature-owned ZIP store writer with UTF-8 paths and CRC-32 rather than adding an archive dependency. It caps packs at four outputs and 100 MB and stores the rendered files without recompression.
 - **Device Mockup assets:** The initial laptop and monitor scenes were generated specifically for this application and compressed to WebP. Their source and distribution notes are in [`public/mockups/README.md`](public/mockups/README.md).
 - **UI:** shadcn/ui components provide common controls. Shared light and dark theme tokens live in `src/app/globals.css`; button, card, control and popover styles use those tokens. `next-themes` respects the system preference and saves an explicit theme choice.
 - **Limits:** Canvas filters, memory use and export capacity vary by browser and device. Large images and output sizes can fail on constrained devices; the editor reports input, storage and export errors while preserving the current in-memory composition.
 
 ## Scope
 
-This release has no accounts, server-side image processing, external uploads, cloud saving, analytics, billing or direct posting to X. Browser persistence and downloaded project files are separate: the browser copy is convenient and recoverable, while the downloaded project is the user's portable backup.
+This release has no accounts, server-side image processing, external uploads, cloud saving, analytics, billing or direct social posting. Browser persistence and downloaded project files are separate: the browser copy is convenient and recoverable, while the downloaded project is the user's portable backup.

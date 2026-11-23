@@ -1,6 +1,6 @@
 # Milestone 6: Batch Social Asset Exporter
 
-**Status:** Implementation in progress  
+**Status:** Complete
 **Specification verification date:** 23 November 2026  
 **Product:** A local-first editor that turns one master image into a reviewed, downloadable pack of social placements.
 
@@ -19,7 +19,7 @@ The first release supports these four placements:
 
 These are recommended creator specifications, not acceptance guarantees. Platform requirements can change; the catalog includes source links and a verification date and is easy to review and update. The tool does not connect to social accounts, post assets, measure analytics, upload files to a server, or claim that a platform accepted an export.
 
-Lossless PNG output can preserve the rendered pixels. Resizing, cropping, or converting a lossy source necessarily changes pixel data; the tool must explain that clearly. It keeps the original file bytes unchanged, produces each selected placement directly from the source, and defaults to PNG. It never silently crops, distorts, upscales, downscales, substitutes an asset, or applies lossy compression. Explicit JPEG/WebP export may be offered with user-controlled quality. When source and output dimensions and format match and there are no edits, the original bytes may be copied exactly.
+Lossless PNG output can preserve rendered pixels. Resizing, cropping, or converting a lossy source necessarily changes pixel data; the tool explains that clearly. It keeps the original file bytes unchanged, produces each selected placement directly from the source, and defaults to PNG. Cropping is explicit, meaningful downsampling is flagged, and upscaling must be acknowledged; it does not distort or substitute assets, chain resizing, or apply lossy compression without a format choice. Explicit JPEG/WebP export has user-controlled quality. When source and output dimensions and format match and there are no edits, the original bytes may be copied exactly.
 
 ## Repository findings and implementation constraints
 
@@ -44,7 +44,7 @@ Lossless PNG output can preserve the rendered pixels. Resizing, cropping, or con
 
 - One master image is the primary and complete first-release workflow. Multi-image sequencing is out of scope.
 - Placement selection and source upload can happen before editing; once a source exists, the editor shows a pack overview, active preview, variant navigation, and contextual controls.
-- Smart fit/crop recommendations compare source and target aspect ratios. **Fit** preserves all source content. **Crop** is explicit and its crop region is visible and adjustable. Fit/crop, focal point, background, overlay visibility and optional margins are common settings with sparse per-placement overrides.
+- Smart fit/crop recommendations compare source and target aspect ratios. **Fit** preserves all source content. **Crop** is explicit and its crop region is visible and adjustable. Fit/crop, focal point, background, and optional overlay/safe inset are shared defaults with sparse per-placement overrides.
 - Preview and export call the same composition math. The preview uses a downscaled display canvas; export draws the original decoded image to the exact target dimensions. The renderer enables high-quality Canvas interpolation and draws overlays at final resolution.
 - Provide set overview, per-variant preview, clean presentation mode, undo/redo for meaningful edits, accessible variant thumbnails/buttons, and status feedback for empty, loading, error, saved, and exported states.
 - Provide keyboard focus and navigation, explicit buttons/number fields as alternatives to dragging, screen-reader names/status, and touch targets of at least 40 px. Do not trap mobile scroll in a control sheet.
@@ -63,7 +63,7 @@ Feature files are grouped under `src/features/social-asset-exporter/`:
 - `social-asset-exporter-editor.tsx` and focused controls/components: client-side editor state, history, file selection, preview, controls, and export orchestration.
 - `src/app/tools/social-asset-exporter/page.tsx` and `loading.tsx`: thin route, metadata and semantic loading shell.
 
-Source PNG/JPEG/WebP files are capped at 40 MB, 16,000 px per side, and 32 MP. The decoded source plus project archive are validated against explicit total byte bounds. Per-output dimensions are fixed by the catalog and capped at 16 MP; archive generation is bounded by placement count, aggregate output pixels and bytes. Project imports validate schema, catalog IDs, timestamps, image MIME, decoded dimensions, and data size before replacing the active project. Failed imports are staged and committed only after full validation.
+Source PNG/JPEG/WebP files are capped at 40 MB, 16,000 px per side, and 32 MP; logos are capped at 10 MB and the combined project asset limit is 50 MB. Per-output dimensions are fixed by the catalog and capped at 16 MP; the pack is capped at 24 MP of aggregate output pixels, four files, and 100 MB of archive bytes. Project imports validate schema, catalog IDs, timestamps, image MIME/signature, decoded dimensions, and data size before replacing the active project. Failed imports are staged and committed only after full validation.
 
 Composition data, transient selection/history, renderer, and browser persistence remain separate typed boundaries. Projects include the source image and project settings; recovery storage is browser-local and may be evicted. There is no account, cloud save, server-side processing, or application upload endpoint.
 
@@ -73,7 +73,7 @@ PNG is the default lossless container. Canvas rendering can preserve alpha and r
 
 ## Responsive UX and visual system
 
-Use the existing semantic theme tokens, shadcn/ui controls, shared `AppHeader`, borders, radii, focus rings, and light/dark theme support. Keep social brand colors and user typography in pack data, not app theme tokens. Desktop shows overview/variant list, a large preview, and contextual settings with primary export visible. Tablet may narrow the controls but retains preview and output metadata. Mobile uses a full-width preview, accessible variant strip, stacked controls and sticky export affordance. Errors and warnings appear next to the affected source, variant or export action.
+Use the existing semantic theme tokens, shadcn/ui controls, shared `AppHeader`, borders, radii, focus rings, and light/dark theme support. Keep social brand colors and user typography in pack data, not app theme tokens. The user-controlled safe inset is 4–14%; it guides text/logo placement and is shown in preview only, not included in exports. Desktop shows overview/variant list, a large preview, and contextual settings with primary export visible. Tablet may narrow the controls but retains preview and output metadata. Mobile uses a full-width preview, accessible variant strip, collapsible native details for optional controls, and sticky export. Errors and warnings appear next to the affected source, variant or export action.
 
 ## Implementation phases
 
@@ -85,18 +85,23 @@ Use the existing semantic theme tokens, shadcn/ui controls, shared `AppHeader`, 
 
 ## Acceptance criteria
 
-- [ ] Discoverable home tool card, working route, metadata and loading state.
-- [ ] Name pack, select one or more catalog outputs, add one local master source, preserve source bytes and recover work after errors.
-- [ ] Each output previews from the original; per-output focal/crop/layout changes are isolated, visible and keyboard-adjustable.
-- [ ] Show dimensions, aspect ratio, output format/size and source-resolution/crop/upscale/downsample warnings before export; never silently alter content or quality.
-- [ ] PNG is default; optional lossy formats and quality settings are explicit. Transformed outputs use final-resolution rendering and high-quality interpolation; true no-op may reuse exact source bytes.
-- [ ] One-action ZIP contains normalized platform/placement paths and stable descriptive filenames; archive input and resource bounds are validated.
-- [ ] Versioned `.socialpack` project round-trips source and settings; local recovery is behind a typed persistence boundary.
-- [ ] Accessible variant navigation, visible focus, keyboard and numeric pointer alternatives, sufficient touch targets, and empty/loading/error/success feedback.
-- [ ] Light/dark, desktop/tablet/mobile layouts match the existing design system; mobile has no horizontal overflow and keeps export reachable.
-- [ ] `README.md` and this document describe actual implementation and verified manual review; no direct posting, analytics, or server uploads are added.
+- [x] Discoverable home tool card, working route, metadata and loading state.
+- [x] Name pack, select one or more catalog outputs, add one local master source, preserve source bytes and recover work after errors.
+- [x] Each output previews from the original; per-output focal/crop/layout changes are isolated, visible and keyboard-adjustable.
+- [x] Show dimensions, aspect ratio, output format/size and source-resolution/crop/upscale/downsample warnings before export; cropping is explicit, upscaling is acknowledged, and meaningful downsampling is flagged.
+- [x] PNG is default; optional lossy formats and quality settings are explicit. Transformed outputs use final-resolution rendering and high-quality interpolation; true no-op may reuse exact source bytes.
+- [x] One-action ZIP contains normalized platform/placement paths and stable descriptive filenames; archive input and resource bounds are validated.
+- [x] Versioned `.socialpack` project round-trips source and settings; local recovery is behind a typed persistence boundary.
+- [x] Accessible variant navigation, visible focus, keyboard and numeric pointer alternatives, sufficient touch targets, and empty/loading/error/success feedback.
+- [x] Light/dark, desktop/tablet/mobile layouts match the existing design system; mobile has no horizontal overflow and keeps export reachable.
+- [x] `README.md` and this document describe actual implementation and verified manual review; no direct posting, analytics, or server uploads are added.
 
 ## Progress and verification log
 
-- 23 November 2026: Inspected the clean `milestone-6-batch-social-asset-exporter` worktree, home directory, Framecraft, Collage Maker, Device Mockups, GIF Maker and local design tokens. Reviewed Framecraft at 1280 px and 390 px, Collage Maker at 1280 px and 390 px, Device Mockups at 1280 px and 390 px, GIF Maker at 1280 px and 390 px, and home at 1280 px and 390 px using the app preview. Read installed Next.js 16.4.6 App Router, CSS, metadata and image docs. Verified the catalog against official Pinterest, YouTube and LinkedIn specifications linked above.
-- Implementation and manual review results will be appended as work progresses.
+- 2026-11-23: Inspected the repository, home directory, Framecraft, Collage Maker, Device Mockups, GIF Maker, and semantic design tokens. Reviewed the existing tools at desktop and phone widths. Read the installed Next.js 16.4.6 App Router, CSS, metadata, and image documentation before application code.
+- 2026-11-23: Verified Pinterest Standard Pin (1000 x 1500), YouTube video thumbnail (3840 x 2160), YouTube Shorts thumbnail (2160 x 3840), and LinkedIn landscape single-image ad (1200 x 628) against the official pages linked above. The catalog records the recommended dimensions, URLs, and verification date.
+- 2026-11-23: Implemented the versioned catalog/model, image signature and project validation, source-to-output Canvas renderer, IndexedDB recovery boundary, .socialpack import/export, bounded four-entry ZIP writer, responsive editor, placement-local crop/focal controls, brand settings, safe inset guides, whole-pack preview, quality overview, route metadata/loading state, and home directory card. Updated README.
+- Manual workflow: Loaded a 1600 x 900 local PNG, reviewed all four outputs and the whole-pack preview, adjusted one placement's crop, confirmed the upscaling warning, and downloaded the ZIP. Inspected its four platform/placement paths and exact output dimensions; entries are stored without compression. Saved and reopened a .socialpack project and confirmed its source and placement override remained available.
+- Responsive review: Inspected the editor in light and dark themes at 1280 x 800, 820 x 1024, and 390 x 844. Phone and tablet have no horizontal overflow; mobile keeps preview first, variant selection available, and download in a safe-area-aware sticky action bar. The home directory shows the new card at desktop and phone widths without horizontal overflow.
+- Verification: pnpm typecheck, targeted ESLint for the Milestone 6 feature/route/tool registry, and pnpm build pass. Full pnpm lint reports three existing react-hooks/set-state-in-effect errors and four warnings in src/features/device-mockups/device-mockups-editor.tsx; it reports no Milestone 6 findings. No automated tests were added or run, per repository instructions.
+- Browser limits: Canvas 2D toBlob output and color-profile decoding can vary by browser. Transformed exports do not preserve original metadata or ICC profiles, and device canvas-memory limits can prevent large exports. Export errors leave the project editable.

@@ -1,4 +1,4 @@
-import { Grid2X2, ImageIcon, Film, Laptop } from "lucide-react";
+import { Grid2X2, ImageIcon, Film, Laptop, Images } from "lucide-react";
 
 export const tools = [
   {
@@ -35,6 +35,15 @@ export const tools = [
     href: "/tools/gif-maker",
     category: "Image",
     icon: Film,
+    status: "available",
+  },
+  {
+    id: "social-asset-exporter",
+    name: "Batch Social Asset Exporter",
+    description: "Create a pack of social image sizes from one original design.",
+    href: "/tools/social-asset-exporter",
+    category: "Image",
+    icon: Images,
     status: "available",
   },
 ] as const;
