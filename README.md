@@ -1,6 +1,6 @@
 # Tools
 
-A Next.js tools directory. It currently includes **Framecraft**, a product screenshot composer, **Collage Maker**, a multi-image collage editor, and **Device Mockups**.
+A Next.js tools directory. It currently includes **Framecraft**, a product screenshot composer, **Collage Maker**, a multi-image collage editor, **Device Mockups**, and **GIF Maker**.
 
 ## Run locally
 
@@ -30,6 +30,7 @@ src/
     tools/framecraft/          Framecraft route and loading state
     tools/collage-maker/       Collage Maker route and loading state
     tools/device-mockups/      Device Mockups route and loading state
+    tools/gif-maker/           GIF Maker route and loading state
   components/                  Shared platform UI and shadcn/ui components
   features/framecraft/          Framecraft domain and editor logic
     components/                Canvas, background, screenshot and shared controls
@@ -48,6 +49,13 @@ src/
     model.ts                    Versioned template, composition and project types
     render.ts                   Perspective warp and preview/export renderer
     storage.ts                  Browser recovery and image data adapter
+  features/gif-maker/           GIF Maker models, frame rendering, editor and encoder worker
+    gif-maker-editor.tsx        Local source editing and export orchestration
+    model.ts                    GIF settings, limits and frame sizing
+    render.ts                   Shared source-to-output frame renderer
+    encoder.ts                  Typed client-to-worker GIF encoding boundary
+    gif-encoder.worker.ts       Frame palette mapping and GIF encoding
+    media.ts                    Local video seeking and image loading
   lib/
     tools.ts                    Typed directory registry for available tools
 docs/
@@ -80,6 +88,12 @@ Collage Maker creates square, portrait, landscape, story, or custom-size composi
 
 Collage Maker stores images and recovery drafts in its own IndexedDB database. Project files include the composition and source images so they can be reopened on another device. Image inputs accept PNG, JPEG, and WebP, up to 40 MB each. Canvases are limited to 4,096 pixels per side and 16 megapixels total; projects are limited to 120 MB of source images. Browser storage is best effort, so download a project file to keep a portable copy.
 
+## GIF Maker
+
+GIF Maker creates an animated GIF from a local MP4 or WebM clip or an ordered sequence of 2–30 PNG, JPEG, or WebP images. Video clips can be trimmed to 10 seconds, sampled at 5–15 fps, and exported at a maximum dimension of 640 pixels. The default maximum size is 320 pixels. Image frames can be reordered by dragging, keyboard sorting, or a per-frame options menu, and use one shared duration. Both modes support original, square, portrait, or landscape output, fit/crop, three output sizes, and loop-once or loop-forever behavior. On desktop, settings stay in a pinned sidebar with its own scroll area; on phones, they stack below the preview. The result is previewed and downloaded as a `.gif`.
+
+Source media stays in memory on the device and is cleared when the page is left. Video input is limited to 100 MB; still images are limited to 40 MB each, 120 MB combined, 16,000 pixels per side, 32 megapixels each, and 80 megapixels across the sequence. GIF output uses a white matte, has no audio, and is limited to 256 colors per frame. Browser codec support varies, and the current encoder does not apply dithering, so video and photographic output can show color banding or flicker. These limits and quality tradeoffs are documented in [Milestone 2](docs/milestone-2.md).
+
 ## Device Mockups
 
 Device Mockups places a local PNG, JPEG, or WebP screenshot into a curated laptop or monitor scene. Choose a mockup, add a screenshot, then adjust fill/fit, zoom, and horizontal or vertical position inside its screen. Use **Finished** to inspect the composition without editing guides, then download PNG or JPEG at the scene's native size or twice its resolution. A project file includes the screenshot and settings so it can be opened later.
@@ -88,7 +102,9 @@ The first catalog scenes are bundled in `public/mockups/` and have screen geomet
 
 ## Implementation notes
 
-- **Rendering:** Both tools use the browser Canvas 2D API instead of adding Konva or Fabric. Each tool uses the same renderer for its editable preview and final output, so composition scaling, clipping and layer order have one source of truth. Workspace guides and selection handles are excluded from export. Framecraft's shadow spread is rendered by expanding a filled rounded shape because Canvas 2D does not expose a native shadow-spread setting.
+- **Rendering:** Framecraft and Collage Maker use the browser Canvas 2D API instead of adding Konva or Fabric. Each tool uses the same renderer for its editable preview and final output, so composition scaling, clipping and layer order have one source of truth. GIF Maker uses Canvas 2D to size and composite each frame before encoding. Workspace guides and selection handles are excluded from export. Framecraft's shadow spread is rendered by expanding a filled rounded shape because Canvas 2D does not expose a native shadow-spread setting.
+- **GIF encoding:** GIF Maker uses `gifenc` in a feature-local Web Worker. The browser decodes local video and seeks to sampled frames; the app sends one composited frame at a time to the worker, which quantizes its palette and appends it to the GIF. This keeps CPU-heavy encoding away from the UI and avoids loading a general-purpose WebAssembly transcoder. `gifenc` has no built-in dithering or worker wrapper, so those quality limits and the worker boundary are explicit.
+- **GIF image sorting:** GIF Maker uses `@dnd-kit/react` for pointer and touch drag-and-drop with keyboard sorting. A small frame options menu provides one-step moves without dragging.
 - **Persistence:** Framecraft and Collage Maker use separate typed storage interfaces and IndexedDB databases. Their composition data and stable asset IDs do not depend on browser APIs, keeping each tool's domain model separate from persistence.
 - **Device Mockups:** The catalog stores normalized display corners for each scene. Canvas 2D renders the screenshot into display space with a projective warp and rounded screen mask; the same function produces the preview and download. Static mockups are loaded through a catalog interface, and local recovery uses a feature-owned IndexedDB adapter. Catalog items use stable IDs and versions so a later hosted catalog can resolve the same project references.
 - **Device Mockup assets:** The initial laptop and monitor scenes were generated specifically for this application and compressed to WebP. Their source and distribution notes are in [`public/mockups/README.md`](public/mockups/README.md).

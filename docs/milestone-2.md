@@ -48,7 +48,7 @@ Before implementation, inspect the current repository state and installed Next.j
 
 - Accept multiple PNG, JPEG, or WebP images, consistent with the existing image tools.
 - Show an ordered list or thumbnail strip with each image's position visible.
-- Let users reorder frames using pointer controls and accessible **Move up** / **Move down** buttons. Dragging must not be the only way to reorder.
+- Let users reorder frames by dragging a dedicated grip. Support keyboard sorting and provide a frame options menu with earlier/later actions as a non-drag pointer alternative.
 - Provide one global frame-duration control, defaulting to 100 ms, with an editable numeric value. Per-image timing and transition effects are out of scope.
 - Require at least two images to create an animation. Explain the requirement before export.
 
@@ -77,7 +77,7 @@ Enforce limits before encoding. Explain how to resolve limit errors, and never s
 
 - Keep the page simple: source-mode choice, source preview, mode-specific timing controls, shared output settings, and one prominent create/download action.
 - Use the existing semantic design tokens and shared UI components. Support light and dark themes.
-- On desktop, keep the preview and controls in a clear workspace-and-controls layout. On phones, prioritize a visible preview and keep the essential create, cancel, and download actions reachable without excessive scrolling.
+- On desktop, keep the preview on the left and pin the settings sidebar on the right as the page scrolls. Give the sidebar a viewport-bounded height and its own vertical scroll area. On phones, stack the preview and settings in page flow, prioritize a visible preview, and keep the essential create, cancel, and download actions reachable without excessive scrolling.
 - Make input mode, selected clip range, frame order, output dimensions, and current processing state clear.
 - Provide visible focus, labels for all inputs, appropriate accessible names for icon buttons, and status announcements for progress and errors.
 - Timeline and reorder interactions require keyboard and non-dragging pointer alternatives. Number fields must be available for precise timing and size values.
@@ -109,6 +109,10 @@ Use `gifenc` as the initial encoding candidate. It accepts indexed image data an
 Phase 0 must validate that the selected package, worker bundling, and worker asset paths work with this repo's current Next.js setup. Confirm package version, license, and maintenance state before installation. Do not install `@ffmpeg/ffmpeg` or `gifski-wasm` preemptively.
 
 If native decoding fails the supported input requirements or cannot reliably produce frames in the supported browsers, stop and document the evidence. Then evaluate `@ffmpeg/ffmpeg` as an explicit alternative, including its WebAssembly payload, worker and static asset deployment, memory/performance impact, and licenses of the selected core build. Do not quietly switch to a server upload or remote conversion service.
+
+### Sortable image sequence
+
+Use `@dnd-kit/react` for pointer and touch drag-and-drop with keyboard sorting. Keep a dedicated drag handle so scrolling the image list or sidebar does not start a drag. Provide a non-drag options menu for moving one image earlier or later. On desktop, the right settings sidebar stays pinned while the page scrolls and owns its vertical scrolling; at phone widths, return settings to normal page flow and keep the action bar reachable.
 
 ### GIF output constraints
 
@@ -162,7 +166,7 @@ Use the phases as decision and review checkpoints. Make meaningful commits as ea
 - Build the responsive editor shell with **Video** and **Images** input modes, clear empty states, and accessible navigation.
 - Use shared components and theme tokens; do not create new global styles unless genuinely shared.
 
-**Checkpoint:** The directory links to the new route; the shell works at phone and desktop widths in light and dark themes with no dead controls.
+**Checkpoint:** The directory links to the new route; the shell works at phone and desktop widths in light and dark themes with no dead controls. The desktop settings pane stays pinned and scrolls independently; the phone layout stacks settings below the preview.
 
 ### Phase 2 — Domain model, validation, and local source lifecycle
 
@@ -181,7 +185,7 @@ Use the phases as decision and review checkpoints. Make meaningful commits as ea
 **Goal:** Let users choose and prepare a GIF source.
 
 - Implement local video preview, metadata display, start/end selection, and numeric timing alternatives.
-- Implement image sequence thumbnails, order controls, accessible move-up/down alternatives, and global frame duration.
+- Implement image sequence thumbnails, a drag handle, keyboard sorting, non-drag move actions, and global frame duration.
 - Implement shared aspect ratio, fit/crop, output-size, and loop controls.
 - Keep preview transform and export transform calculations in the same renderer.
 - Make selected mode and applicable controls clear; retain or reset mode-specific settings predictably when switching modes.
@@ -208,13 +212,50 @@ Use the phases as decision and review checkpoints. Make meaningful commits as ea
 - Run the repo's lint, typecheck, and production build scripts.
 - Manually exercise the full journey for video and image inputs, including replace, clear, invalid input, invalid timing, maximum supported input, processing, cancellation, retry, preview, and download.
 - Inspect actual downloaded GIFs for dimensions, animation, frame order, timing, loop behavior, matte/transparency, and agreement with the preview.
-- Review desktop, intermediate, and phone layouts; light and dark themes; keyboard and touch controls; focus and screen-reader feedback; progress and error states.
+- Review desktop, intermediate, and phone layouts; pinned sidebar scrolling; light and dark themes; keyboard and touch sorting; focus and screen-reader feedback; progress and error states.
 - Check supported browser decoding with representative MP4/WebM files. Clearly document tested browser support and unsupported formats/codecs.
 - Check performance on representative devices and ensure the chosen input/output limits prevent avoidable tab freezes or memory exhaustion.
 - Update `README.md` with the feature, supported inputs, controls, limits, local-processing behavior, package choices, and known GIF limitations.
 - Record actual completion status and remaining limitations in this document. Present the finished interface for user review.
 
 **Checkpoint:** The tool is discoverable, usable, and complete for the defined scope; supported formats and processing limits are based on observed behavior, and known limitations are visible to users.
+
+## Implementation status and verification (2026-11-23)
+
+The Milestone 2 v1 feature is implemented. This section records what was built and checked, plus limits that still need real-device validation.
+
+### Phase 0 findings and decisions
+
+- Installed `gifenc@1.0.3` under the MIT license. The npm registry metadata reported its last modification as 2022-05-03 when checked on 2026-11-23. The upstream README describes the project as a work in progress, notes there is no built-in worker API, and warns that it has no dithering support. The package was retained because it is a small pure-JavaScript encoder with no runtime dependencies, and its API and worker integration work in this repo. Re-evaluate it before expanding format or quality requirements.
+- Installed `@dnd-kit/react@0.5.3` under the MIT license for image sorting. Its sortable hook supports a dedicated handle; its default configuration includes pointer and keyboard sensors plus drag accessibility attributes and screen-reader instructions. A non-drag options menu remains available for one-position moves.
+- The feature-local module worker using `new Worker(new URL(...), { type: "module" })` works with this repo's Next.js 16.4.6 setup and in the production build. Frames are drawn on the main thread and sent one at a time to the worker for palette mapping and encoding.
+- Browser checks used generated local H.264 MP4 and VP9 WebM clips and three PNG images. Both video containers decoded and exported in the tested browser; support for other codecs depends on the browser.
+- A 10-second, 640 x 360, 12 fps MP4 produced 120 frames. At 320 x 180 output it took about 34 seconds and produced a 1,243,897-byte GIF. At 640 x 360 it took about 60 seconds and produced a 3,262,355-byte GIF. These timings came from one desktop development-browser session and are not a cross-device performance guarantee. The default maximum output size is 320 pixels because larger exports took longer; 640 pixels remains available with progress and cancellation.
+- GIF frame delays have 10 ms precision. Passing 83.33 ms independently for every 12 fps frame shortened a 10-second clip to 9.6 seconds. Video delays are now distributed across adjacent 80 ms and 90 ms values, keeping the tested 120-frame output at 10.0 seconds. Still-image frame durations are already multiples of 50 ms.
+- The browser exposes JavaScript heap size in this session but not a whole-tab measurement that includes media decoding and worker memory. Peak memory was therefore not measured. The file, pixel, frame, and dimension limits below are enforced, but they should be rechecked on representative phones before being raised or described as universally safe.
+
+### Implemented behavior
+
+- Added the `/tools/gif-maker` route and GIF Maker directory entry.
+- Added video and image-sequence modes, local source preview, clip start/end fields and sliders, frame-rate control, ordered image thumbnails with drag-and-drop sorting and an options menu, and a shared image-duration control.
+- Added Original, Square, Portrait, and Landscape output, cover/contain fit, 320/480/640 maximum-size presets, and loop-once or loop-forever output. The default maximum size is 320 pixels; the default video rate is 12 fps and the default image duration is 100 ms.
+- Added source validation and limits: video up to 100 MB and 10 seconds; images from PNG, JPEG, or WebP, 2-30 frames, up to 40 MB each and 120 MB combined; 16,000 pixels per side, 32 megapixels per image, and 80 megapixels per sequence; video frame rate 5-15 fps; output maximum dimension 640 pixels.
+- Sources and generated results remain in browser memory. The app does not upload media or save an edit. Video audio is not exported. Transparent image areas are composited on white.
+- Added cancel and retry handling, progress, generated GIF preview, download, and URL/worker cleanup. Desktop settings stay pinned in a viewport-height sidebar with independent scrolling. Phone layouts stack the settings and keep Create, Cancel, or Download available in a bottom action bar.
+
+### Verification performed
+
+- `pnpm typecheck` passes, and targeted ESLint on GIF Maker files, its route, and the tool registry passes. The production build compiles and finishes TypeScript, but static prerendering fails on `/` because the concurrent auth changes in `src/app/page.tsx` read uncached `searchParams` outside Suspense; the error surfaces through the root tooltip provider. The repository-wide `pnpm lint` reports three errors and four warnings in the unrelated `src/features/device-mockups/device-mockups-editor.tsx`. Neither adjacent workstream was changed as part of GIF Maker.
+- Manual browser workflow covered H.264 MP4 import/export, VP9 WebM import/export, a three-image sequence, pointer drag-and-drop at desktop and phone viewport widths, keyboard sorting with Space/ArrowUp/Space, non-drag options-menu reordering, square crop output, invalid file rejection, source clearing, cancellation, retry, download, loop-once, and loop-forever. The drag handle exposes the package's keyboard instructions and accessibility attributes.
+- Downloaded GIFs were inspected with `ffprobe`; the image sequence's downloaded frames were also read with Pillow to confirm green/red/blue order after reordering. The final 10-second video output was 320 x 180, 120 frames, and 10.0 seconds. The image sequence output was 160 x 160, three frames, and 0.3 seconds. The once output omitted the Netscape loop extension; the forever output included a zero repeat count.
+- Reviewed the desktop settings sidebar at 1280 x 800: its computed position is sticky, its scroll viewport is 768 px tall, and its 1,010 px contents scroll internally. Reviewed the phone layout at 390 x 844 in light and dark appearances. Phone coverage used viewport emulation, not a physical phone or mobile browser.
+
+### Known limitations
+
+- `gifenc` has no dithering, so photos and video can show color banding or flicker. GIF is limited to 256 colors per frame and the output has no audio.
+- A 10-second clip can take tens of seconds to export in the measured environment, especially at the 640-pixel setting. Processing time and memory use vary with browser, codec, source dimensions, and device.
+- MP4/WebM file extensions do not guarantee that the contained codec is supported. The app reports decode errors, but this implementation does not include a transcoder or fallback codec.
+- No physical mobile-device memory or performance profile has been collected. Keep these limits conservative and repeat the checks on target devices before changing them.
 
 ## Definition of done
 
@@ -232,5 +273,6 @@ Use the phases as decision and review checkpoints. Make meaningful commits as ea
 - [MDN: Manipulating video using canvas](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Manipulating_video_using_canvas) — drawing a decoded video frame into Canvas 2D.
 - [MDN: `HTMLVideoElement.requestVideoFrameCallback()`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement/requestVideoFrameCallback) — video frame callbacks and frame timing metadata.
 - [gifenc](https://github.com/mattdesl/gifenc) — browser and Node GIF encoding API; frame palettes and worker example.
+- [dnd kit React sortable](https://dndkit.com/react/hooks/use-sortable/) — sortable lists, drag handles, and keyboard-capable drag interactions.
 - [ffmpeg.wasm overview](https://ffmpegwasm.netlify.app/docs/overview/) — browser worker and WebAssembly architecture if broader decoding is required.
 - [MDN: GIF format](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types#gif_graphics_interchange_format) — browser support and color-format constraints.
