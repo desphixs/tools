@@ -4,7 +4,7 @@ import { tools } from "@/lib/tools";
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white dark:bg-black">
       <AppHeader />
       <main className="mx-auto w-full max-w-6xl px-5 pb-20 pt-12 sm:px-8 sm:pt-16">
         <div className="mb-8 max-w-xl">
