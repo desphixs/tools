@@ -13,7 +13,7 @@ export default function Home() {
           </h1>
         </div>
 
-        <section aria-label="Available tools" className="grid gap-x-5 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
+        <section aria-label="Available tools" className="grid gap-x-8 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
           {tools.filter((tool) => tool.status === "available").map((tool) => {
             const Thumbnail = tool.thumbnail;
             return (

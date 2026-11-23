@@ -154,7 +154,6 @@
 }
 
 .tool-card-surface {
-  border: 1px solid var(--surface-border-subtle);
   box-shadow: var(--tool-card-inset-shadow), var(--shadow-card);
 }
 

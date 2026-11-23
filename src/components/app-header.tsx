@@ -19,7 +19,7 @@ export function AppHeader({
   authReturnTo?: string;
 }) {
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
+    <div className="mx-auto w-full max-w-[1680px] px-5 sm:px-8">
       <header className="app-header-surface relative z-40 flex h-14 w-full items-center justify-between rounded-b-2xl border-x border-b px-3.5 sm:px-4">
         <BrandLogo onClick={onHomeClick} />
 
