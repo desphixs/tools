@@ -1197,7 +1197,7 @@ export function FramecraftEditor() {
               </div>
             </div>
             <div
-              className="checkerboard flex min-h-0 flex-1 items-center justify-center overflow-auto p-3 sm:p-6"
+              className="checkerboard flex min-h-0 flex-1 items-center justify-center overflow-auto p-3 sm:p-6 [container-type:size]"
               onDrop={handleCanvasDrop}
               onDragOver={(event) => event.preventDefault()}
               onClick={(event) => {
@@ -1205,7 +1205,7 @@ export function FramecraftEditor() {
                 selectPanel("canvas");
               }}
             >
-              <div className={`relative w-full ${isWorkspacePanning ? "" : "transition-transform"} motion-reduce:transition-none`} style={{ maxWidth: 980, aspectRatio: `${composition.canvas.width} / ${composition.canvas.height}`, maxHeight: "100%", transform: `translate(${workspacePan.x}px, ${workspacePan.y}px) scale(${workspaceZoom / 100})`, transformOrigin: "center" }}>
+              <div className={`relative w-full ${isWorkspacePanning ? "" : "transition-transform"} motion-reduce:transition-none`} style={{ maxWidth: `min(980px, ${100 * composition.canvas.width / composition.canvas.height}cqh)`, aspectRatio: `${composition.canvas.width} / ${composition.canvas.height}`, transform: `translate(${workspacePan.x}px, ${workspacePan.y}px) scale(${workspaceZoom / 100})`, transformOrigin: "center" }}>
                 <canvas
                   ref={canvasRef}
                   aria-label={compare ? "Original screenshot preview" : cropMode ? "Composition canvas. Use arrow keys to reposition the screenshot crop." : "Composition canvas. Use arrow keys to move the selected screenshot."}
