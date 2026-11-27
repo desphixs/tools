@@ -2,6 +2,7 @@ export const canvasPresets = {
   landscape: { width: 1200, height: 675, label: "Landscape", ratio: "16:9" },
   square: { width: 1080, height: 1080, label: "Square", ratio: "1:1" },
   portrait: { width: 1080, height: 1350, label: "Portrait", ratio: "4:5" },
+  rawaxys: { width: 1600, height: 1200, label: "RawAxys Library", ratio: "4:3" },
 } as const;
 
 export type CanvasPreset = keyof typeof canvasPresets;

@@ -23,7 +23,7 @@ export function CanvasControls({ composition, transaction, onSetPreset, onSetDim
   return (
     <div className="space-y-6 p-4 sm:p-5">
       <SectionHeading title="Canvas" description="Set the size and layout of the exported image." />
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {(Object.keys(canvasPresets) as CanvasPreset[]).map((preset) => {
           const item = canvasPresets[preset];
           const active = composition.canvas.width === item.width && composition.canvas.height === item.height;

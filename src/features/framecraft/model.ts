@@ -11,7 +11,7 @@ export type FramecraftAsset = {
 export type CanvasSettings = {
   width: number;
   height: number;
-  preset: "landscape" | "square" | "portrait" | "custom";
+  preset: "landscape" | "square" | "portrait" | "rawaxys" | "custom";
   radius: number;
   transparentCorners: boolean;
 };
@@ -200,7 +200,7 @@ export function validateComposition(value: unknown): value is Composition {
     canvas.width <= MAX_CANVAS_DIMENSION && canvas.height <= MAX_CANVAS_DIMENSION &&
     canvas.width * canvas.height <= MAX_CANVAS_PIXELS &&
     finiteBetween(canvas.radius, 0, 1000) && typeof canvas.transparentCorners === "boolean" &&
-    ["landscape", "square", "portrait", "custom"].includes(canvas.preset) &&
+    ["landscape", "square", "portrait", "rawaxys", "custom"].includes(canvas.preset) &&
     ["solid", "gradient", "image"].includes(background?.type) &&
     (background.assetId === null || (typeof background.assetId === "string" && background.assetId.length > 0 && background.assetId.length <= 80)) &&
     (background.type !== "image" || typeof background.assetId === "string") &&
